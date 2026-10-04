@@ -1,0 +1,970 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Repaso 4.° Periodo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&display=swap">
+<style>
+/* Layout: cuaderno escolar — barra de materias arriba, tarjetas de tema, quiz de una pregunta a la vez */
+:root{
+  --bg:#F3F6F1; --paper:#FFFFFF; --ink:#1E2A22; --muted:#5B6B60; --line:#D8E1D6;
+  --bio:#2F8F5B; --bio-soft:#E2F2E8; --math:#3C6FB6; --math-soft:#E3ECF8; --lang:#B5552F; --lang-soft:#F8E6DD; --soc:#8A6A1F; --eng:#7A4FA8; --geo:#B23A6E; --geo-soft:#F7E1EB; --fis:#1F8A99;
+  --ok:#1F8A4C; --ok-soft:#DDF3E5; --bad:#C2412D; --bad-soft:#FBE4DF; --hint:#A86A00; --hint-soft:#FFF1D2;
+  --display:"Fredoka","Trebuchet MS",system-ui,sans-serif; --body:"Atkinson Hyperlegible",system-ui,-apple-system,"Segoe UI",sans-serif;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#141A16; --paper:#1D2520; --ink:#E7EFE9; --muted:#9DB0A3; --line:#2F3B33;
+  --bio:#5CC48A; --bio-soft:#1F3428; --math:#7EA8E6; --math-soft:#1E2A3B; --lang:#E58D68; --lang-soft:#3A2419; --soc:#D2AE58; --eng:#B793E0; --geo:#E27BA6; --geo-soft:#3A1E2B; --fis:#5CC7D6;
+  --ok:#5CCB8A; --ok-soft:#1C3527; --bad:#F07E6A; --bad-soft:#3A221D; --hint:#F0B64A; --hint-soft:#382C14; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#141A16; --paper:#1D2520; --ink:#E7EFE9; --muted:#9DB0A3; --line:#2F3B33;
+  --bio:#5CC48A; --bio-soft:#1F3428; --math:#7EA8E6; --math-soft:#1E2A3B; --lang:#E58D68; --lang-soft:#3A2419; --soc:#D2AE58; --eng:#B793E0; --geo:#E27BA6; --geo-soft:#3A1E2B; --fis:#5CC7D6;
+  --ok:#5CCB8A; --ok-soft:#1C3527; --bad:#F07E6A; --bad-soft:#3A221D; --hint:#F0B64A; --hint-soft:#382C14; color-scheme:dark}
+*{box-sizing:border-box}
+body{margin:0}[hidden]{display:none!important}img{max-width:100%}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:17px;line-height:1.5}
+.wrap{max-width:760px;margin:0 auto;padding-inline:16px;padding-block:20px 48px}
+h1,h2,h3{font-family:var(--display);text-wrap:balance;margin:0;line-height:1.2}
+header.top{display:flex;flex-direction:column;gap:4px;margin-bottom:18px}
+.eyebrow{font-size:13px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:700}
+header.top h1{font-size:30px;font-weight:700}
+header.top p{margin:0;color:var(--muted)}
+.tabs{display:flex;gap:8px;overflow-x:auto;padding-bottom:6px;margin-bottom:18px;scrollbar-width:thin}
+.tab{flex:0 0 auto;font:600 15px var(--display);border:2px solid var(--line);background:var(--paper);color:var(--ink);padding:8px 14px;border-radius:999px;cursor:pointer;display:flex;align-items:center;gap:8px}
+.tab .dot{width:10px;height:10px;border-radius:50%;background:var(--c)}
+.tab[aria-selected="true"]{border-color:var(--c);background:var(--c);color:var(--paper)}
+.tab[aria-selected="true"] .dot{background:var(--paper)}
+.tab:focus-visible,.btn:focus-visible,.opt:focus-visible,.topic:focus-visible{outline:3px solid var(--hint);outline-offset:2px}
+.subject-head{display:flex;flex-direction:column;gap:4px;margin-bottom:14px}
+.subject-head h2{font-size:24px;color:var(--c)}
+.subject-head p{margin:0;color:var(--muted)}
+.topics{display:grid;gap:12px}
+.topic .num{font:700 20px var(--display);width:42px;height:42px;border-radius:12px;display:grid;place-items:center;background:var(--soft);color:var(--c)}
+.topic h3{font-size:19px;font-weight:600}
+.topic p{margin:2px 0 0;color:var(--muted);font-size:15px}
+.topic .meta{text-align:right;font-size:14px;color:var(--muted);white-space:nowrap}
+.topic .meta b{display:block;font:700 18px var(--display);color:var(--ink)}
+.pending{background:var(--paper);border:2px dashed var(--line);border-radius:16px;padding:22px;color:var(--muted)}
+.pending h3{color:var(--ink);font-size:19px;margin-bottom:6px}
+/* quiz */
+.bar{display:flex;align-items:center;gap:12px;margin-bottom:14px}
+.back{background:none;border:none;color:var(--muted);font:600 15px var(--display);cursor:pointer;padding:6px 0}
+.progress{flex:1;height:10px;background:var(--line);border-radius:999px;overflow:hidden}
+.progress span{display:block;height:100%;background:var(--c);transition:width .3s}
+.count{font:600 15px var(--display);color:var(--muted);font-variant-numeric:tabular-nums}
+.card{background:var(--paper);border:2px solid var(--line);border-radius:18px;padding:20px}
+.card .topic-name{font-size:13px;letter-spacing:.08em;text-transform:uppercase;color:var(--c);font-weight:700;margin-bottom:8px}
+.card h2.q{font-family:var(--body);font-size:20px;font-weight:700;line-height:1.4;margin-bottom:16px}
+.opts{display:grid;gap:10px}
+.opt{display:flex;gap:12px;align-items:flex-start;text-align:left;width:100%;background:var(--bg);border:2px solid var(--line);border-radius:12px;padding:12px 14px;font:inherit;color:var(--ink);cursor:pointer}
+.opt .l{font:700 15px var(--display);flex:0 0 28px;height:28px;border-radius:8px;display:grid;place-items:center;background:var(--paper);border:2px solid var(--line)}
+.opt:hover:not(:disabled){border-color:var(--c)}
+.opt:disabled{cursor:default}
+.opt.wrong{border-color:var(--bad);background:var(--bad-soft)}
+.opt.right{border-color:var(--ok);background:var(--ok-soft)}
+.opt.dim{opacity:.55}
+.fb{margin-top:14px;border-radius:12px;padding:12px 14px;font-size:16px}
+.fb b{font-family:var(--display)}
+.fb.hint{background:var(--hint-soft);color:var(--ink);border-left:4px solid var(--hint)}
+.fb.ok{background:var(--ok-soft);border-left:4px solid var(--ok)}
+.fb.bad{background:var(--bad-soft);border-left:4px solid var(--bad)}
+.actions{display:flex;flex-wrap:wrap;gap:10px;margin-top:16px;justify-content:flex-end}
+.btn{font:600 16px var(--display);border-radius:12px;padding:10px 18px;cursor:pointer;border:2px solid var(--c);background:var(--c);color:var(--paper)}
+.btn.ghost{background:transparent;color:var(--c)}
+/* results */
+.score{display:flex;gap:18px;align-items:center;flex-wrap:wrap;margin-bottom:12px}
+.ring{width:110px;height:110px;border-radius:50%;display:grid;place-items:center;background:conic-gradient(var(--c) calc(var(--p)*1%),var(--line) 0)}
+.ring div{width:84px;height:84px;border-radius:50%;background:var(--paper);display:grid;place-items:center;font:700 26px var(--display);font-variant-numeric:tabular-nums}
+.score h2{font-size:24px}
+.score p{margin:4px 0 0;color:var(--muted)}
+.review{margin:16px 0 0;padding:0;list-style:none;display:grid;gap:10px}
+.review li{background:var(--bg);border-radius:12px;padding:12px 14px;border-left:4px solid var(--bad)}
+.review li.half{border-left-color:var(--hint)}
+.review .rq{font-weight:700}
+.review .ra{color:var(--muted);font-size:15px;margin-top:4px}
+.dad{margin-top:18px;background:var(--soft);border-radius:14px;padding:14px 16px}
+.dad h3{font-size:17px;margin-bottom:6px}
+.dad pre{white-space:pre-wrap;font:15px/1.5 var(--body);margin:0}
+.note{font-size:14px;color:var(--muted);margin-top:14px}
+.topic{display:grid;grid-template-columns:auto 1fr;gap:14px;align-items:start;background:var(--paper);border:2px solid var(--line);border-radius:16px;padding:16px}
+.tb{min-width:0}
+.tmeta{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+.chip{font-size:13px;padding:3px 10px;border-radius:999px;background:var(--bg);color:var(--muted);border:1px solid var(--line)}
+.chip.ok{background:var(--ok-soft);color:var(--ok);border-color:transparent;font-weight:700}
+.tbtns{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+.small{font-size:14px;color:var(--muted)}
+textarea{width:100%;font:16px/1.5 var(--body);color:var(--ink);background:var(--bg);border:2px solid var(--line);border-radius:12px;padding:10px 12px;margin-top:6px;resize:vertical}
+textarea:focus{outline:none;border-color:var(--c)}
+.fb.model{background:var(--soft);border-left:4px solid var(--c)}
+.exp h2.et{font-size:24px;margin-bottom:6px}
+.exp h3{font-size:19px;margin:20px 0 8px;color:var(--c)}
+.exp p{margin:0 0 10px;max-width:65ch}
+.xcards{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px;margin:10px 0}
+.xc{background:var(--bg);border-radius:12px;padding:12px 14px;display:flex;flex-direction:column;gap:4px}
+.xc b{font:600 17px var(--display);color:var(--c)}
+.xc i{font-size:14px;color:var(--muted)}
+.story{background:var(--bg);border:2px dashed var(--line);border-radius:12px;padding:14px 16px;margin:8px 0;max-width:65ch;line-height:1.6}
+.refbox{margin-bottom:14px}.refbox summary{cursor:pointer;font:600 15px var(--display);color:var(--c)}
+.tree{font:14px/1.45 ui-monospace,Menlo,Consolas,monospace;background:var(--bg);border-radius:12px;padding:12px 14px;overflow-x:auto;margin:8px 0}
+.credit{text-align:center;font-size:13px;color:var(--muted);padding:0 16px 28px;margin:0}
+.stepnav{display:flex;gap:6px;overflow-x:auto;margin-bottom:12px;padding-bottom:4px}
+.sn{flex:0 0 auto;font:600 13px var(--display);border:2px solid var(--line);background:var(--paper);color:var(--muted);border-radius:999px;padding:5px 11px;cursor:pointer}
+.sn.done{color:var(--c);border-color:var(--soft);background:var(--soft)}
+.sn.on{background:var(--c);border-color:var(--c);color:var(--paper)}
+.ideas{margin:6px 0 0;padding-left:0;list-style:none;counter-reset:i;display:grid;gap:10px}
+.ideas li{counter-increment:i;display:grid;grid-template-columns:36px 1fr;gap:12px;align-items:start;background:var(--soft);border-radius:12px;padding:12px 14px;font-size:17px}
+.ideas li::before{content:counter(i);font:700 18px var(--display);width:32px;height:32px;border-radius:10px;display:grid;place-items:center;background:var(--c);color:var(--paper)}
+.ex{background:var(--bg);border-radius:12px;padding:12px 14px;margin:10px 0}
+.ex p{margin:4px 0}
+.exn{font:600 13px var(--display);letter-spacing:.06em;text-transform:uppercase;color:var(--c)}
+.ex details summary,.reto summary{cursor:pointer;font:600 15px var(--display);color:var(--c);margin-top:6px}
+.ex details p{background:var(--paper);border-left:4px solid var(--c);border-radius:8px;padding:10px 12px;margin-top:8px}
+.errs{margin:6px 0 0;padding:0;list-style:none;display:grid;gap:10px}
+.errs li{background:var(--bad-soft);border-left:4px solid var(--bad);border-radius:10px;padding:12px 14px}
+.reto{background:var(--bg);border-radius:12px;padding:12px 14px;margin:10px 0}
+.reto summary{color:var(--ink);font:600 16px var(--body);display:flex;gap:10px;align-items:flex-start;list-style:none}
+.reto summary::-webkit-details-marker{display:none}
+.reto .rn{flex:0 0 26px;height:26px;border-radius:8px;display:grid;place-items:center;background:var(--c);color:var(--paper);font:700 14px var(--display)}
+.reto[open] summary{color:var(--c)}
+.reto p{margin:10px 0 0 36px}
+.dato{margin-top:16px;background:var(--hint-soft);border-radius:12px;padding:12px 14px}
+.dato b{font-family:var(--display);color:var(--hint)}
+.dato p{margin:4px 0 0}
+.tip{margin-top:16px;background:var(--hint-soft);border-left:4px solid var(--hint);border-radius:10px;padding:12px 14px}
+.xt{overflow-x:auto;margin:8px 0}
+.xt table{border-collapse:collapse;width:100%;min-width:520px;font-size:15px}
+.xt th,.xt td{border-bottom:1px solid var(--line);padding:8px;text-align:left;vertical-align:top}
+.xt th{font-family:var(--display);color:var(--muted);font-weight:600}
+.xt td:nth-child(2){font:700 16px var(--display);white-space:nowrap;font-variant-numeric:tabular-nums}
+.chain{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin:10px 0}
+.ln{background:var(--bg);border:2px solid var(--line);border-radius:10px;padding:6px 10px;font-weight:700;display:flex;flex-direction:column;line-height:1.2}
+.ln small{font-weight:400;font-size:12px;color:var(--muted)}
+.ln.sun{border-color:var(--hint);background:var(--hint-soft)}
+.ar{color:var(--c);font-weight:700}
+.pyr{display:flex;flex-direction:column;align-items:center;gap:4px;margin:12px 0 6px}
+.pyr div{background:var(--c);color:var(--paper);text-align:center;border-radius:8px;padding:7px 6px;font:600 14px var(--display)}
+.pyr div:nth-child(1){opacity:.55}.pyr div:nth-child(2){opacity:.7}.pyr div:nth-child(3){opacity:.85}
+@media (max-width:480px){.topic{grid-template-columns:1fr}.topic .num{display:none}}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+
+
+<div class="wrap" id="app"></div>
+<p class="credit">Panel de repaso creado por Andrés Fernández y su hija · Colegio Claretiano de Neiva · 7.° grado</p>
+
+<script>
+const SUBJECTS=[
+{id:"bio",name:"Biología",c:"--bio",soft:"--bio-soft",desc:"Interacciones en los seres vivos. Lo que evalúan al volver de vacaciones.",topics:[
+{id:"intra",name:"Relaciones intraespecíficas",desc:"Entre individuos de la misma especie: familiar, gregaria, colonial y competencia.",qs:[
+{q:"¿Qué es una relación intraespecífica?",o:["La que ocurre entre individuos de la misma especie","La que ocurre entre individuos de especies diferentes","La relación entre un ser vivo y el clima","La relación entre una planta y el suelo"],h:"Piensa en el prefijo: «intra» significa «dentro».",e:"Intra = dentro. Es una relación dentro de la misma especie, por ejemplo entre dos chigüiros."},
+{q:"Completa: cuando la relación es entre individuos de la misma especie, se denomina relación ______.",o:["intraespecífica","interespecífica","simbiótica","trófica"],h:"Ojo, esta es la que se confundió en el cuaderno. ¿«Dentro» o «entre»?",e:"Misma especie = INTRAespecífica. Diferentes especies = INTERespecífica."},
+{q:"Una manada de chigüiros se junta un tiempo para buscar agua y protegerse, y luego se separa. ¿Qué tipo de asociación es?",o:["Gregaria","Colonial","Familiar","Parasitismo"],h:"La clave está en «un tiempo»: se reúnen solo temporalmente.",e:"Gregaria: los individuos se reúnen de forma temporal para desplazarse, alimentarse o protegerse."},
+{q:"Los corales viven unidos físicamente y forman una gran estructura organizada. ¿Qué tipo de asociación es?",o:["Colonial","Gregaria","Familiar","Comensalismo"],h:"Fíjate en «unidos físicamente».",e:"Colonial: los individuos permanecen unidos físicamente y forman una estructura organizada."},
+{q:"Una pareja de guacamayas construye un nido y cuida a sus polluelos. ¿Qué relación es?",o:["Familiar","Gregaria","Colonial","Depredación"],h:"¿Para qué se juntan? Para reproducirse y criar.",e:"Familiar: individuos que se agrupan principalmente para reproducirse y cuidar de sus crías."},
+{q:"Dos gallos de una finca en Garzón pelean por el mismo territorio y las mismas gallinas. ¿Qué relación es?",o:["Competencia intraespecífica","Mutualismo","Asociación familiar","Comensalismo"],h:"Son de la misma especie y luchan por un recurso limitado.",e:"Competencia: individuos de la misma especie que se disputan un recurso limitado (alimento, territorio o pareja)."},
+{q:"Una bandada de garzas vuela junta hacia el río Magdalena para alimentarse y después cada una sigue por su lado. Es una agrupación…",o:["Gregaria","Colonial","Familiar","Interespecífica"],h:"Se juntan un rato y luego se separan.",e:"Es gregaria porque la unión es temporal."},
+{q:"¿Cuál es la diferencia principal entre una agrupación colonial y una gregaria?",o:["En la colonial están unidos físicamente; en la gregaria se reúnen solo por un tiempo","En la colonial son de distinta especie; en la gregaria de la misma","La colonial es para reproducirse; la gregaria para pelear","No hay diferencia, son lo mismo"],h:"Recuerda los corales y las garzas.",e:"Colonial = unidos físicamente y de forma permanente. Gregaria = reunión temporal."},
+{q:"¿Cuál de estos NO es un recurso por el que compiten los individuos de una especie?",o:["El color de su pelaje","El alimento","El territorio","La pareja"],h:"La competencia es por cosas que escasean y que todos necesitan.",e:"Compiten por recursos limitados: alimento, territorio o pareja. El color no es un recurso."},
+{q:"¿Cuál es un ejemplo de relación intraespecífica?",o:["Dos lobos de la misma manada cazando juntos","Un jaguar cazando un chigüiro","Una garrapata en una vaca","Una abeja en una flor de café"],h:"Busca la opción donde los dos sean del mismo tipo de animal.",e:"Los dos lobos son de la misma especie. Las otras opciones tienen especies diferentes."},
+{q:"En la subienda, los bocachicos nadan juntos en grandes grupos río arriba para protegerse y reproducirse. Es una agrupación…",o:["Gregaria","Colonial","Parasitaria","Comensal"],h:"Se agrupan durante la temporada y no quedan pegados unos a otros.",e:"Los cardúmenes son agrupaciones gregarias: se reúnen temporalmente para desplazarse y protegerse."},
+{q:"Verdadero o falso: en las agrupaciones coloniales los individuos se separan cuando quieren.",o:["Falso","Verdadero"],h:"¿Un coral puede despegarse y irse nadando?",e:"Falso. En las colonias los individuos permanecen unidos físicamente."},
+{q:"¿Por qué la competencia entre individuos de la misma especie suele ser muy fuerte?",o:["Porque necesitan exactamente los mismos recursos","Porque son de especies distintas","Porque siempre se comen entre ellos","Porque viven en lugares diferentes"],h:"Dos vacas del mismo potrero, ¿qué comen?",e:"Al ser iguales, necesitan el mismo alimento, territorio y pareja, por eso chocan más."},
+{q:"El prefijo «intra» de intraespecífica significa:",o:["Dentro","Entre","Contra","Fuera"],h:"Como en «intramuros»: dentro de los muros.",e:"Intra = dentro de la misma especie."},
+{q:"¿Cuál de estas NO es una relación intraespecífica?",o:["Comensalismo","Asociación familiar","Asociación gregaria","Competencia entre individuos de la misma especie"],h:"Una de estas ocurre entre especies diferentes.",e:"El comensalismo es interespecífico: ocurre entre dos especies distintas."}
+]},
+{id:"inter",name:"Relaciones interespecíficas",desc:"Entre especies diferentes: comensalismo, mutualismo, simbiosis, depredación, parasitismo y competencia.",qs:[
+{q:"¿Qué es una relación interespecífica?",o:["La que ocurre entre organismos de especies diferentes","La que ocurre entre individuos de la misma especie","La relación entre padres e hijos","La que solo ocurre entre plantas"],h:"«Inter» significa «entre», como en interescolar.",e:"Inter = entre especies distintas, por ejemplo una vaca y una garrapata."},
+{q:"La garcita bueyera camina junto a las vacas y se come los insectos que ellas espantan al pisar. A la vaca no le pasa nada. ¿Qué relación es?",o:["Comensalismo","Mutualismo","Parasitismo","Depredación"],h:"Una gana y a la otra ni le va bien ni mal.",e:"Comensalismo: una especie se beneficia sin afectar a la otra."},
+{q:"La abeja toma el néctar de la flor del cafeto y, al mismo tiempo, lleva el polen que ayuda a la flor a formar el fruto. ¿Qué relación es?",o:["Mutualismo","Comensalismo","Parasitismo","Competencia"],h:"¿Quién gana aquí? Mira a las dos.",e:"Mutualismo: las dos especies obtienen beneficio."},
+{q:"Una garrapata vive sobre una vaca y se alimenta de su sangre, debilitándola. ¿Qué relación es?",o:["Parasitismo","Mutualismo","Comensalismo","Asociación colonial"],h:"Uno gana a costa de perjudicar al otro, pero sin comérselo de una vez.",e:"Parasitismo: un organismo obtiene recursos de otro al que perjudica."},
+{q:"Un jaguar caza y se come un chigüiro. ¿Qué relación es?",o:["Depredación","Parasitismo","Comensalismo","Mutualismo"],h:"Lo captura y lo consume.",e:"Depredación: un organismo captura y consume a otro."},
+{q:"En la depredación, el animal que es capturado y comido se llama:",o:["Presa","Depredador","Hospedero","Parásito"],h:"El jaguar es el depredador. ¿Y el chigüiro?",e:"La presa es el organismo capturado. El que caza es el depredador."},
+{q:"En el parasitismo, el organismo que es perjudicado (por ejemplo la vaca con garrapatas) se llama:",o:["Hospedero","Presa","Productor","Comensal"],h:"Es el que «hospeda» al parásito.",e:"El hospedero es el organismo sobre o dentro del cual vive el parásito."},
+{q:"¿Qué es la simbiosis?",o:["Una asociación estrecha y permanente entre organismos de diferente especie, con dependencia","Una pelea entre animales de la misma especie","Cuando un animal caza a otro","Una agrupación temporal para migrar"],h:"Piensa en «estrecha», «permanente» y «dependencia».",e:"Simbiosis: asociación estrecha y permanente entre especies diferentes que dependen una de la otra. Ej.: los líquenes (hongo + alga)."},
+{q:"En el mutualismo:",o:["Ambas especies se benefician","Una se beneficia y la otra se perjudica","Una se beneficia y a la otra no le pasa nada","Ambas se perjudican"],h:"«Mutuo» quiere decir que va para los dos lados.",e:"Mutualismo = beneficio mutuo, las dos ganan."},
+{q:"En el comensalismo:",o:["Una especie se beneficia y la otra no se afecta","Las dos especies se benefician","Una especie se come a la otra","Una especie vive a costa de dañar a la otra"],h:"Recuerda la garcita bueyera y la vaca.",e:"Comensalismo: una gana y la otra queda igual."},
+{q:"Un gavilán y una lechuza cazan los mismos ratones en un cultivo de arroz del Huila. ¿Qué relación hay entre el gavilán y la lechuza?",o:["Competencia interespecífica","Mutualismo","Asociación gregaria","Comensalismo"],h:"Son especies distintas y quieren el mismo recurso.",e:"Competencia interespecífica: especies diferentes que se disputan un recurso limitado."},
+{q:"El pez rémora se pega al tiburón y come los restos de comida que él deja, sin hacerle daño. ¿Qué relación es?",o:["Comensalismo","Parasitismo","Depredación","Mutualismo"],h:"¿Al tiburón le pasa algo?",e:"Comensalismo: la rémora se beneficia y al tiburón no le afecta."},
+{q:"Las bacterias del intestino humano nos ayudan a digerir y a cambio reciben alimento y un lugar donde vivir. ¿Qué relación es?",o:["Mutualismo","Parasitismo","Comensalismo","Competencia"],h:"¿Ganan las bacterias? ¿Ganamos nosotros?",e:"Mutualismo: las dos partes se benefician."},
+{q:"¿Cuál es la diferencia entre parasitismo y depredación?",o:["El parásito vive a costa del hospedero sin matarlo de inmediato; el depredador captura y consume a su presa","No hay diferencia","En el parasitismo las dos especies ganan","El depredador siempre es más pequeño que su presa"],h:"Compara la garrapata con el jaguar.",e:"El parásito se aprovecha por un tiempo del hospedero; el depredador lo caza y se lo come."},
+{q:"Un piojo vive en la cabeza de una persona y se alimenta de su sangre. ¿Qué relación es y quién es el hospedero?",o:["Parasitismo; la persona es el hospedero","Mutualismo; el piojo es el hospedero","Depredación; la persona es la presa","Comensalismo; el piojo es el hospedero"],h:"Uno gana y el otro sale perjudicado. ¿Quién hospeda a quién?",e:"Es parasitismo y la persona es el hospedero."}
+]},
+{id:"trofica",name:"Cadena alimenticia y pirámide trófica",desc:"Productores, consumidores, descomponedores y cómo se pasa la energía.",qs:[
+{q:"¿Qué muestra una cadena alimenticia?",o:["Quién se come a quién y cómo pasa la energía de un ser vivo a otro","Los animales que viven en grupo","Los lugares donde vive cada animal","Cuántos años vive cada especie"],h:"Piensa en las flechas: pasto → vaca → ser humano.",e:"Muestra el paso de energía y materia: quién se alimenta de quién."},
+{q:"¿Qué son los productores?",o:["Seres vivos que fabrican su propio alimento con la luz del sol, como las plantas","Animales que comen plantas","Bacterias y hongos que descomponen restos","Animales que cazan a otros"],h:"¿Quién hace su comida con fotosíntesis?",e:"Los productores (plantas y algas) fabrican su alimento por fotosíntesis. Son la base de toda cadena."},
+{q:"¿De dónde viene la energía original de casi todas las cadenas alimenticias?",o:["Del sol","Del suelo","Del agua","De los animales carnívoros"],h:"Las plantas la necesitan para la fotosíntesis.",e:"El sol da la energía que los productores convierten en alimento."},
+{q:"En la cadena pasto → vaca → ser humano, ¿qué es la vaca?",o:["Consumidor primario (herbívoro)","Productor","Consumidor secundario","Descomponedor"],h:"Come directamente al productor.",e:"El consumidor primario se alimenta del productor; es herbívoro."},
+{q:"En la cadena pasto → saltamontes → rana → serpiente → águila, ¿qué es la rana?",o:["Consumidor secundario","Consumidor primario","Productor","Consumidor terciario"],h:"Cuenta: el pasto es el productor, el saltamontes es el primario…",e:"La rana se come al consumidor primario (el saltamontes), así que es consumidor secundario."},
+{q:"En la misma cadena (pasto → saltamontes → rana → serpiente → águila), ¿qué es la serpiente?",o:["Consumidor terciario","Consumidor secundario","Consumidor primario","Descomponedor"],h:"Va un nivel más arriba que la rana.",e:"Productor → primario → secundario → terciario. La serpiente es terciaria."},
+{q:"¿Qué hacen los descomponedores?",o:["Transforman los restos de seres vivos en materia que luego usan los productores","Fabrican su alimento con la luz del sol","Cazan a los consumidores secundarios","Polinizan las flores"],h:"Recuerda lo que copió en el cuaderno: bacterias y hongos.",e:"Bacterias y hongos descomponen restos orgánicos e inorgánicos y devuelven nutrientes al suelo para los productores."},
+{q:"¿Cuáles de estos son descomponedores?",o:["Bacterias y hongos","Plantas y algas","Vacas y caballos","Águilas y serpientes"],h:"Piensa en lo que hace que una fruta caída se pudra.",e:"Bacterias y hongos son los descomponedores."},
+{q:"En una cadena alimenticia, las flechas apuntan:",o:["Del que es comido hacia el que lo come (dirección de la energía)","Del que come hacia el que es comido","Siempre hacia el sol","Hacia los descomponedores solamente"],h:"La flecha muestra hacia dónde va la energía: pasto → vaca.",e:"La flecha sigue la energía: va del alimento al que se alimenta."},
+{q:"En la pirámide trófica, ¿qué va en la base?",o:["Los productores","Los consumidores terciarios","Los descomponedores","Los depredadores grandes"],h:"La base es lo que sostiene a todos los demás.",e:"Los productores van en la base porque son los más abundantes y los que tienen más energía."},
+{q:"Al subir de un nivel a otro en la pirámide trófica, la energía disponible:",o:["Disminuye","Aumenta","Se queda igual","Desaparece por completo en el segundo nivel"],h:"Cada ser vivo gasta energía en moverse, respirar y crecer.",e:"Disminuye: solo pasa una pequeña parte (cerca del 10 %) al siguiente nivel."},
+{q:"¿Por qué en un ecosistema hay muchos menos jaguares que chigüiros?",o:["Porque la energía disminuye en cada nivel y no alcanza para muchos depredadores","Porque los jaguares no se reproducen","Porque los chigüiros son productores","Porque los jaguares comen pasto"],h:"Piensa en la forma de la pirámide.",e:"Hacia arriba la energía es menor, por eso caben menos organismos en los niveles altos."},
+{q:"Si en un potrero desaparecen casi todas las ranas, ¿qué pasaría con los saltamontes?",o:["Aumentarían, porque ya no tienen quién se los coma","Disminuirían","No les pasaría nada","Se volverían carnívoros"],h:"Las ranas se comen a los saltamontes.",e:"Sin su depredador, los saltamontes aumentan. Un cambio en un eslabón afecta a toda la cadena."},
+{q:"¿Cuál es el orden correcto de esta cadena alimenticia?",o:["Maíz → gallina → zorro","Zorro → gallina → maíz","Gallina → maíz → zorro","Maíz → zorro → gallina"],h:"Empieza siempre por el productor.",e:"Productor (maíz) → consumidor primario (gallina) → consumidor secundario (zorro)."},
+{q:"¿En qué se diferencian la cadena alimenticia y la pirámide trófica?",o:["La cadena muestra quién se come a quién en línea; la pirámide muestra los niveles y cómo disminuye la energía","Son temas que no tienen relación","La pirámide solo incluye plantas","La cadena solo incluye descomponedores"],h:"Una es en fila con flechas; la otra es por pisos.",e:"Muestran los mismos niveles de dos formas: la cadena en secuencia y la pirámide con la cantidad de energía en cada nivel."}
+]}
+]},
+{id:"mat",name:"Matemáticas",c:"--math",soft:"--math-soft",desc:"Unidad 4 · Introducción al álgebra. Profe Elian Puentes · 4 horas semanales.",topics:[
+{id:"lenguaje",name:"Lenguaje algebraico",desc:"Pasar frases del español a letras y números, y al revés.",
+exp:`<h3>¿Qué es?</h3><p>El <b>lenguaje algebraico</b> usa <b>letras, números y signos</b> para escribir frases matemáticas de forma corta. La letra (x, a, n…) representa un número que no conocemos.</p>
+<h3>Diccionario para traducir</h3><p class="small">x = «un número»</p>
+<div class="xt"><table><thead><tr><th>En palabras</th><th>En álgebra</th></tr></thead><tbody>
+<tr><td>El doble de un número</td><td>2x</td></tr>
+<tr><td>El triple de un número</td><td>3x</td></tr>
+<tr><td>La mitad de un número</td><td>x/2</td></tr>
+<tr><td>La tercera parte de un número</td><td>x/3</td></tr>
+<tr><td>El cuadrado de un número</td><td>x²</td></tr>
+<tr><td>El cubo de un número</td><td>x³</td></tr>
+<tr><td>Un número aumentado en 5 (más 5)</td><td>x + 5</td></tr>
+<tr><td>Un número disminuido en 5 (menos 5)</td><td>x − 5</td></tr>
+<tr><td>La suma de dos números</td><td>a + b</td></tr>
+<tr><td>El producto de dos números</td><td>a · b = ab</td></tr>
+<tr><td>Un número par</td><td>2n</td></tr>
+</tbody></table></div>
+<h3>Ejemplo del día a día</h3><p>Si un tamal en Neiva cuesta <b>p</b> pesos, 3 tamales cuestan <b>3p</b>. Si Mariana tiene <b>x</b> años, dentro de 5 años tendrá <b>x + 5</b>.</p>
+<div class="tip"><b>Ojo:</b> «el doble» (2x) no es lo mismo que «el cuadrado» (x²). El doble de 5 es 10; el cuadrado de 5 es 25.</div>`,
+qs:[
+{q:"¿Qué es el lenguaje algebraico?",o:["Una forma de escribir frases matemáticas usando letras, números y signos","Un idioma que se habla en otros países","Una forma de escribir solo con números","Una manera de dibujar figuras geométricas"],h:"Piensa en qué usamos para escribir «el doble de un número».",e:"Usa letras (que representan números desconocidos), números y signos de operación."},
+{q:"«El doble de un número» se escribe:",o:["2x","x²","x + 2","x/2"],h:"Doble = multiplicar por 2.",e:"El doble es multiplicar por 2: 2x."},
+{q:"«El cuadrado de un número» se escribe:",o:["x²","2x","x + 2","x/2"],h:"Cuadrado = el número multiplicado por sí mismo.",e:"El cuadrado es x·x = x²."},
+{q:"«Un número aumentado en 5» se escribe:",o:["x + 5","5x","x − 5","x⁵"],h:"Aumentar = sumar.",e:"Aumentado en 5 = x + 5."},
+{q:"«La mitad de un número» se escribe:",o:["x/2","2x","x − 2","x²"],h:"La mitad es dividir entre 2.",e:"La mitad es x ÷ 2 = x/2."},
+{q:"«El triple de un número, disminuido en 4» se escribe:",o:["3x − 4","4 − 3x","x³ − 4","3x + 4"],h:"Primero el triple, luego le restas 4.",e:"Triple = 3x; disminuido en 4 = − 4. Queda 3x − 4."},
+{q:"«La suma de dos números» se escribe:",o:["a + b","ab","2a","a − b"],h:"Como son dos números distintos, usa dos letras distintas.",e:"Dos números diferentes se representan con dos letras: a + b."},
+{q:"¿Qué dice en palabras la expresión 2x + 1?",o:["El doble de un número aumentado en uno","El cuadrado de un número más uno","Un número aumentado en dos","La mitad de un número más uno"],h:"2x es el doble. ¿Qué le pasa después?",e:"2x = el doble; + 1 = aumentado en uno."},
+{q:"¿Cómo se representa un número par cualquiera?",o:["2n","n + 2","n²","2n + 1"],h:"Los pares son múltiplos de 2.",e:"Todo número par es 2 por otro número: 2n. (2n + 1 representa un impar.)"},
+{q:"Mariana tiene x años. ¿Qué expresión representa su edad dentro de 5 años?",o:["x + 5","x − 5","5x","x/5"],h:"Dentro de 5 años tendrá más edad.",e:"En el futuro se suma: x + 5."},
+{q:"Un tamal en Neiva cuesta p pesos. ¿Cuánto cuestan 3 tamales?",o:["3p","p + 3","p³","p/3"],h:"Es el mismo precio repetido 3 veces.",e:"3 veces p = 3p."}],
+open:[
+{q:"Escribe en lenguaje algebraico: «el cubo de un número disminuido en 7».",a:"x³ − 7"},
+{q:"Escribe en lenguaje algebraico: «la tercera parte de un número más el doble del mismo número».",a:"x/3 + 2x"},
+{q:"Escribe en palabras la expresión 5x − 3.",a:"El quíntuple (cinco veces) de un número disminuido en 3."},
+{q:"Un bus sale de Neiva hacia Pitalito con x pasajeros. En Garzón se suben 8 y se bajan 3. Escribe la expresión de cuántos pasajeros lleva.",a:"x + 8 − 3, que es lo mismo que x + 5."}]},
+{id:"termino",name:"Término algebraico",desc:"Partes de un término: signo, coeficiente, parte literal, exponente y grado.",
+exp:`<h3>¿Qué es?</h3><p>Un <b>término algebraico</b> es una sola expresión formada por números y letras que se <b>multiplican</b> entre sí, sin sumas ni restas en medio. Ej.: 5a², −3m²n, x.</p>
+<h3>Sus partes</h3><p>Tomemos el término <b>−7x³</b>:</p>
+<div class="xcards">
+<div class="xc"><b>Signo</b><span>Positivo (+) o negativo (−).</span><i>Aquí: negativo (−)</i></div>
+<div class="xc"><b>Coeficiente</b><span>El número que multiplica a las letras.</span><i>Aquí: 7</i></div>
+<div class="xc"><b>Parte literal</b><span>Las letras con sus exponentes.</span><i>Aquí: x³</i></div>
+<div class="xc"><b>Exponente</b><span>El número pequeño arriba de la letra.</span><i>Aquí: 3</i></div></div>
+<h3>Grado de un término</h3><p>Es la <b>suma de los exponentes</b> de sus letras.</p>
+<div class="xt"><table><thead><tr><th>Término</th><th>Exponentes</th><th>Grado</th></tr></thead><tbody>
+<tr><td>4x³</td><td>3</td><td>3</td></tr>
+<tr><td>2a²b³</td><td>2 + 3</td><td>5</td></tr>
+<tr><td>6xy</td><td>1 + 1</td><td>2</td></tr>
+</tbody></table></div>
+<div class="tip"><b>Lo invisible también cuenta:</b> si no ves coeficiente, es <b>1</b> (x = 1x). Si no ves exponente, es <b>1</b> (y = y¹). Si no ves signo, es <b>positivo</b>.</div>`,
+qs:[
+{q:"¿Cuáles son las partes de un término algebraico?",o:["Signo, coeficiente, parte literal y exponente","Suma, resta, multiplicación y división","Numerador y denominador","Base, altura y área"],h:"Mira el término −7x³ en la explicación.",e:"Un término tiene signo, coeficiente, parte literal y exponente."},
+{q:"En el término 5a², ¿cuál es el coeficiente?",o:["5","a","2","a²"],h:"Es el número que multiplica a la letra.",e:"El coeficiente es el número: 5."},
+{q:"En el término 5a², ¿cuál es la parte literal?",o:["a²","5","2","5a"],h:"Literal viene de «letra».",e:"La parte literal son las letras con sus exponentes: a²."},
+{q:"En el término 8x⁴, ¿cuál es el exponente?",o:["4","8","x","32"],h:"Es el número pequeño de arriba.",e:"El exponente es 4."},
+{q:"¿Qué signo tiene el término −3m²n?",o:["Negativo","Positivo","No tiene signo","Depende de m"],h:"Mira lo que está antes del 3.",e:"Tiene el signo menos, así que es negativo."},
+{q:"¿Cuál es el coeficiente del término x?",o:["1","0","x","No tiene"],h:"¿Cuántas x hay?",e:"Cuando no se ve el número, el coeficiente es 1, porque x = 1·x."},
+{q:"¿Cuál es el grado del término 4x³?",o:["3","4","7","12"],h:"El grado se mira en los exponentes, no en el coeficiente.",e:"Solo hay un exponente, el 3. El grado es 3."},
+{q:"¿Cuál es el grado del término 2a²b³?",o:["5","6","3","2"],h:"Suma los exponentes de todas las letras.",e:"2 + 3 = 5."},
+{q:"¿Cuál es el grado del término 6xy?",o:["2","1","6","0"],h:"¿Qué exponente tienen x y y si no se ve ninguno?",e:"x¹ y¹: 1 + 1 = 2."},
+{q:"¿Cuál de estos es UN solo término algebraico?",o:["7ab²","3x + 2","a − b","x² + x + 1"],h:"Un término no tiene sumas ni restas en medio.",e:"7ab² es un solo término. Las demás tienen + o − separando términos."},
+{q:"¿Cuál es el exponente de y en el término 9y?",o:["1","0","9","No tiene"],h:"Cuando el exponente no se ve…",e:"Si no se ve el exponente, es 1: y = y¹."}],
+open:[
+{q:"Escribe las partes del término −6a³b²: signo, coeficiente, parte literal y grado.",a:"Signo: negativo. Coeficiente: 6. Parte literal: a³b². Grado: 3 + 2 = 5."},
+{q:"Escribe un término algebraico con coeficiente 3, con dos letras diferentes y de grado 4.",a:"Ejemplos válidos: 3x²y², 3a³b, 3mb³. Lo importante es coeficiente 3, dos letras y que los exponentes sumen 4."},
+{q:"¿Por qué decimos que el coeficiente de x es 1?",a:"Porque x es lo mismo que 1·x. El 1 no se escribe, pero está ahí."},
+{q:"Explica cómo se calcula el grado de 5x²y³z.",a:"Se suman los exponentes de las letras: x tiene 2, y tiene 3, z tiene 1. 2 + 3 + 1 = 6. El grado es 6."}]},
+{id:"expresiones",name:"Expresiones algebraicas y su clasificación",desc:"Qué es una expresión, cuántos términos tiene y si es monomio, binomio, trinomio o polinomio.",
+exp:`<h3>¿Qué es una expresión algebraica?</h3><p>Es una combinación de <b>números y letras</b> unidos por <b>signos de operación</b> (+, −, ·, ÷, potencias). Puede tener uno o varios términos. Los <b>términos se separan con los signos + y −</b>.</p>
+<p>Ej.: en <b>4m − 2n + 6</b> hay 3 términos: 4m, −2n y 6.</p>
+<h3>Clasificación según el número de términos</h3>
+<div class="xt"><table><thead><tr><th>Nombre</th><th>Términos</th><th>Ejemplo</th></tr></thead><tbody>
+<tr><td><b>Monomio</b></td><td>1</td><td>7a²b</td></tr>
+<tr><td><b>Binomio</b></td><td>2</td><td>3x + 5</td></tr>
+<tr><td><b>Trinomio</b></td><td>3</td><td>x² + 2x − 8</td></tr>
+<tr><td><b>Polinomio</b></td><td>4 o más</td><td>a + b + c + d</td></tr>
+</tbody></table></div>
+<p class="small">«Mono» = uno, «bi» = dos, «tri» = tres, «poli» = muchos. Como en monociclo, bicicleta y triciclo.</p>
+<h3>Grado de una expresión</h3><p>Es el <b>mayor grado</b> entre sus términos. En x³ + 2x − 1 los grados son 3, 1 y 0: el grado de la expresión es <b>3</b>.</p>
+<div class="tip"><b>Trampa común:</b> 2ab es un <b>monomio</b>, aunque tenga dos letras. Las letras están multiplicando, no separadas por + o −.</div>`,
+qs:[
+{q:"¿Qué es una expresión algebraica?",o:["Una combinación de números y letras unidos por signos de operación","Una frase escrita solo con palabras","Un número sin letras","Una figura geométrica"],h:"Piensa en 3x + 5.",e:"Combina números, letras y signos de operación."},
+{q:"La expresión 3x + 5 es un:",o:["Binomio","Monomio","Trinomio","Polinomio de 4 términos"],h:"Cuenta los términos separados por + o −.",e:"Tiene 2 términos (3x y 5): es un binomio."},
+{q:"La expresión 7a²b es un:",o:["Monomio","Binomio","Trinomio","Polinomio"],h:"¿Hay algún + o − separando?",e:"Es un solo término: monomio."},
+{q:"La expresión x² + 2x − 8 es un:",o:["Trinomio","Binomio","Monomio","Término"],h:"Cuenta: x², 2x, 8.",e:"Tiene 3 términos: trinomio."},
+{q:"La expresión a + b + c + d es un:",o:["Polinomio","Trinomio","Binomio","Monomio"],h:"Tiene más de tres términos.",e:"Con 4 o más términos se llama polinomio."},
+{q:"¿Cuántos términos tiene 4m − 2n + 6?",o:["3","2","4","6"],h:"Cuenta las partes separadas por + o −.",e:"4m, −2n y 6: son 3 términos."},
+{q:"¿Qué separa los términos en una expresión algebraica?",o:["Los signos + y −","Los signos de multiplicación","Los paréntesis siempre","Los exponentes"],h:"En 3x + 5, ¿qué hay entre 3x y 5?",e:"Los términos se separan con + y −. La multiplicación los une en un solo término."},
+{q:"¿Cuál de estas expresiones es un binomio?",o:["5x − y","5xy","5x + y − 1","5"],h:"Busca la que tenga exactamente 2 términos.",e:"5x − y tiene 2 términos. 5xy y 5 son monomios; 5x + y − 1 es trinomio."},
+{q:"¿Cuál es el grado de la expresión x³ + 2x − 1?",o:["3","1","4","6"],h:"Busca el término con el exponente más grande.",e:"El grado de la expresión es el mayor grado de sus términos: 3."},
+{q:"¿Por qué 2ab es un monomio y no un binomio?",o:["Porque es un solo término: las letras están multiplicando","Porque tiene dos letras","Porque el 2 no cuenta","Porque no tiene exponentes"],h:"¿Qué separa los términos?",e:"No hay + ni − que separe, así que es un solo término."},
+{q:"¿Cuál de estos es un monomio de grado 2?",o:["6x²","x + 2","2x","x³"],h:"Un solo término con exponente 2.",e:"6x² es un término y su grado es 2."}],
+open:[
+{q:"Escribe un ejemplo de monomio, uno de binomio y uno de trinomio.",a:"Ejemplos: monomio 4x; binomio a + 3; trinomio x² + x + 1. Vale cualquier ejemplo con 1, 2 y 3 términos."},
+{q:"Clasifica la expresión 2x²y − 5xy + 3y − 1 y di cuántos términos tiene.",a:"Tiene 4 términos (2x²y, −5xy, 3y y −1), así que es un polinomio."},
+{q:"¿Cuál es el grado del polinomio 4a³ + 2a⁵ − a? Explica.",a:"Los grados de los términos son 3, 5 y 1. El mayor es 5, así que el grado del polinomio es 5."},
+{q:"¿Cuál es la diferencia entre un término y una expresión algebraica?",a:"Un término es una sola parte sin sumas ni restas en medio (ej. 3x²). Una expresión puede tener uno o varios términos unidos por + o − (ej. 3x² + 2x)."}]},
+{id:"valor",name:"Valor numérico",desc:"Reemplazar las letras por números y resolver.",
+exp:`<h3>¿Qué es?</h3><p>El <b>valor numérico</b> de una expresión es el resultado que se obtiene al <b>reemplazar las letras por los números dados</b> y hacer las operaciones.</p>
+<h3>Paso a paso</h3><p>Hallar el valor de <b>3x + 2</b> si <b>x = 4</b>:</p>
+<div class="chain"><span class="ln">3x + 2<small>Expresión</small></span><span class="ar">→</span><span class="ln">3(4) + 2<small>Reemplazo</small></span><span class="ar">→</span><span class="ln">12 + 2<small>Multiplico</small></span><span class="ar">→</span><span class="ln sun">14<small>Resultado</small></span></div>
+<h3>Orden de las operaciones</h3><p>1.° potencias · 2.° multiplicaciones y divisiones · 3.° sumas y restas.</p>
+<p>Ej.: <b>4m²</b> con m = 2 → primero la potencia: 2² = 4 → luego 4 · 4 = <b>16</b>. (No es (4·2)² = 64.)</p>
+<h3>Con dos letras</h3><p><b>2x + 3y</b> con x = 1, y = 2 → 2(1) + 3(2) = 2 + 6 = <b>8</b>.</p>
+<div class="tip"><b>Truco:</b> al reemplazar, pon el número entre <b>paréntesis</b>. Así no te equivocas con los signos negativos: si x = −2, entonces 3x = 3(−2) = −6.</div>`,
+qs:[
+{q:"¿Qué es el valor numérico de una expresión algebraica?",o:["El resultado de reemplazar las letras por números dados y hacer las operaciones","El número de términos que tiene","El exponente más grande","El coeficiente del primer término"],h:"Piensa en lo que haces con 3x + 2 si x = 4.",e:"Se reemplazan las letras por los números y se resuelve."},
+{q:"¿Cuál es el valor numérico de 3x + 2 si x = 4?",o:["14","9","34","12"],h:"3 por 4, y luego más 2.",e:"3(4) + 2 = 12 + 2 = 14."},
+{q:"¿Cuál es el valor numérico de 2a − 5 si a = 3?",o:["1","11","−1","6"],h:"Primero 2 por 3.",e:"2(3) − 5 = 6 − 5 = 1."},
+{q:"¿Cuál es el valor numérico de x² si x = 5?",o:["25","10","7","52"],h:"El cuadrado es el número por sí mismo, no por 2.",e:"5² = 5 · 5 = 25."},
+{q:"¿Cuál es el valor numérico de 4m² si m = 2?",o:["16","64","12","10"],h:"Primero la potencia, después multiplicas por 4.",e:"2² = 4; luego 4 · 4 = 16."},
+{q:"¿Cuál es el valor numérico de a + b si a = 7 y b = −2?",o:["5","9","−9","−5"],h:"Sumar un negativo es como restar.",e:"7 + (−2) = 7 − 2 = 5."},
+{q:"¿Cuál es el valor numérico de 2x + 3y si x = 1 y y = 2?",o:["8","7","6","13"],h:"Reemplaza cada letra por su número.",e:"2(1) + 3(2) = 2 + 6 = 8."},
+{q:"¿Cuál es el valor numérico de x² + x si x = 3?",o:["12","9","6","15"],h:"Primero 3², luego súmale 3.",e:"3² + 3 = 9 + 3 = 12."},
+{q:"El perímetro de un cuadrado es 4L. Si el lado L mide 6 cm, ¿cuánto mide el perímetro?",o:["24 cm","10 cm","36 cm","46 cm"],h:"Reemplaza L por 6.",e:"4(6) = 24 cm."},
+{q:"Si un tamal cuesta p = 3.500 pesos, ¿cuánto vale la expresión 3p?",o:["10.500 pesos","3.503 pesos","7.000 pesos","35.003 pesos"],h:"3 veces 3.500.",e:"3 · 3.500 = 10.500 pesos."},
+{q:"¿Cuál es el valor numérico de 5 − 2x si x = 4?",o:["−3","3","12","−13"],h:"2 por 4 es 8. ¿Cuánto es 5 − 8?",e:"5 − 2(4) = 5 − 8 = −3."}],
+open:[
+{q:"Halla el valor numérico de 2x² − 3x + 1 si x = 2. Escribe los pasos.",a:"2(2)² − 3(2) + 1 = 2(4) − 6 + 1 = 8 − 6 + 1 = 3."},
+{q:"Si a = 3 y b = 2, halla el valor de a² + 2ab + b².",a:"3² + 2(3)(2) + 2² = 9 + 12 + 4 = 25."},
+{q:"Un taxi cobra 5.000 pesos de arranque más 1.200 pesos por cada kilómetro: 5.000 + 1.200k. ¿Cuánto cuesta un viaje de 6 km?",a:"5.000 + 1.200(6) = 5.000 + 7.200 = 12.200 pesos."},
+{q:"Juan dice que el valor de 3x² con x = 2 es 36. ¿Dónde está su error y cuál es la respuesta correcta?",a:"Juan multiplicó primero 3 · 2 = 6 y luego elevó al cuadrado (6² = 36). Primero va la potencia: 2² = 4, y luego 3 · 4 = 12. La respuesta correcta es 12."}]}
+]},
+{id:"geo",name:"Geometría",c:"--geo",soft:"--geo-soft",desc:"Estadística · Introducción a la probabilidad. Profe Karla Tirado.",topics:[
+{id:"experimentos",name:"Experimentos aleatorios y deterministas",desc:"¿Se puede saber el resultado antes de hacerlo o depende del azar?",
+exp:`<h3>Dos tipos de experimentos</h3>
+<div class="xcards">
+<div class="xc"><b>Determinista</b><span>Sabes el resultado <u>antes</u> de hacerlo. Siempre da lo mismo.</span><i>Soltar una piedra: cae. Mezclar pintura amarilla y azul: da verde. Calentar hielo: se derrite.</i></div>
+<div class="xc"><b>Aleatorio</b><span>Conoces los resultados <u>posibles</u>, pero no puedes saber cuál va a salir. Depende del azar.</span><i>Lanzar una moneda o un dado, sacar una balota, el marcador del Atlético Huila el domingo.</i></div></div>
+<h3>Cómo reconocer uno aleatorio</h3><p>1. Se puede repetir en las mismas condiciones. 2. Se conocen todos los resultados posibles. 3. No se puede predecir cuál saldrá.</p>
+<div class="tip"><b>Pregunta clave:</b> «¿Puedo estar segura del resultado antes de hacerlo?» Si la respuesta es <b>sí</b>, es determinista. Si es <b>no</b>, es aleatorio.</div>`,
+qs:[
+{q:"¿Qué es un experimento aleatorio?",o:["Aquel cuyo resultado no se puede predecir con certeza","Aquel que siempre da el mismo resultado","Un experimento de laboratorio","Un experimento que no tiene resultados"],h:"Aleatorio = depende del azar.",e:"En un experimento aleatorio se conocen los resultados posibles, pero no cuál saldrá."},
+{q:"¿Qué es un experimento determinista?",o:["Aquel cuyo resultado se conoce antes de hacerlo","Aquel que depende de la suerte","Aquel que no se puede repetir","Aquel que tiene muchos resultados posibles"],h:"Está «determinado» de antemano.",e:"En el determinista el resultado siempre es el mismo y se sabe antes."},
+{q:"Lanzar una moneda al aire es un experimento:",o:["Aleatorio","Determinista","Imposible","Ninguno"],h:"¿Sabes si caerá cara o sello?",e:"No se puede saber si saldrá cara o sello: es aleatorio."},
+{q:"Soltar una piedra desde la ventana es un experimento:",o:["Determinista","Aleatorio","Imposible","De azar"],h:"¿Hay alguna duda de qué pasará?",e:"Siempre cae al suelo por la gravedad: es determinista."},
+{q:"Sacar sin mirar una balota de una bolsa con balotas de colores es:",o:["Aleatorio","Determinista","Seguro","Imposible"],h:"Sin mirar, ¿sabes qué color sacarás?",e:"No se sabe qué color saldrá: es aleatorio."},
+{q:"Mezclar pintura amarilla con pintura azul es un experimento:",o:["Determinista","Aleatorio","De azar","Imposible"],h:"¿Qué color sale siempre?",e:"Siempre da verde: es determinista."},
+{q:"El resultado del próximo partido del Atlético Huila es un experimento:",o:["Aleatorio","Determinista","Seguro","Ya conocido"],h:"¿Alguien sabe con certeza quién va a ganar?",e:"Puede ganar, empatar o perder; no se sabe: es aleatorio."},
+{q:"Calentar un cubo de hielo al sol en Neiva es un experimento:",o:["Determinista","Aleatorio","De azar","Imposible"],h:"¿Qué le pasa siempre al hielo con calor?",e:"Siempre se derrite: es determinista."},
+{q:"¿Cuál de estas es una característica de un experimento aleatorio?",o:["Se conocen los resultados posibles, pero no cuál saldrá","Siempre da el mismo resultado","No se puede repetir nunca","No tiene resultados posibles"],h:"Piensa en el dado.",e:"Sabemos que el dado da de 1 a 6, pero no cuál número saldrá."},
+{q:"¿Por qué lanzar un dado es aleatorio, si sabemos que saldrá un número del 1 al 6?",o:["Porque sabemos los posibles resultados, pero no cuál exactamente saldrá","Porque siempre sale el 6","Porque el dado tiene puntos","Porque es un juego"],h:"Diferencia entre «posibles» y «el que sale».",e:"Conocer las opciones no significa saber cuál saldrá."},
+{q:"¿Cuál de estos experimentos es determinista?",o:["Multiplicar 3 × 4","Lanzar dos dados","Sacar una carta de una baraja","Lanzar una moneda"],h:"Busca el que siempre da lo mismo.",e:"3 × 4 siempre es 12: es determinista."}],
+open:[
+{q:"Escribe dos ejemplos de experimentos aleatorios y dos de deterministas, diferentes a los de la explicación.",a:"Ejemplos aleatorios: elegir al azar un estudiante de la lista; girar una ruleta. Deterministas: hervir agua; dejar caer un balón. Vale cualquier ejemplo bien clasificado."},
+{q:"Explica con tus palabras la diferencia entre un experimento aleatorio y uno determinista.",a:"En el determinista se sabe el resultado antes de hacerlo y siempre es el mismo. En el aleatorio se conocen los resultados posibles, pero no se puede saber cuál va a salir."},
+{q:"Clasifica y justifica: a) sacar una carta de una baraja; b) sumar 5 + 7.",a:"a) Aleatorio, porque no se sabe qué carta saldrá. b) Determinista, porque siempre da 12."},
+{q:"¿Por qué decimos que el clima de mañana en Neiva es aleatorio?",a:"Porque, aunque se puede pronosticar, no se puede saber con total certeza si va a llover o a hacer sol."}]},
+{id:"espacio",name:"Espacio muestral",desc:"El conjunto de todos los resultados posibles de un experimento aleatorio.",
+exp:`<h3>¿Qué es?</h3><p>El <b>espacio muestral</b> es el <b>conjunto de todos los resultados posibles</b> de un experimento aleatorio. Se escribe con la letra <b>S</b> (o Ω) y los resultados van <b>entre llaves { }</b>.</p>
+<div class="xt"><table><thead><tr><th>Experimento</th><th>Espacio muestral</th><th>N.° de resultados</th></tr></thead><tbody>
+<tr><td>Lanzar una moneda</td><td>S = {cara, sello}</td><td>2</td></tr>
+<tr><td>Lanzar un dado</td><td>S = {1, 2, 3, 4, 5, 6}</td><td>6</td></tr>
+<tr><td>Lanzar dos monedas</td><td>S = {CC, CS, SC, SS}</td><td>4</td></tr>
+<tr><td>Sacar una balota roja, azul o verde</td><td>S = {R, A, V}</td><td>3</td></tr>
+</tbody></table></div>
+<p class="small">C = cara, S = sello.</p>
+<div class="tip"><b>Ojo con las dos monedas:</b> CS y SC son resultados <b>diferentes</b>. En CS la primera moneda sale cara; en SC la primera sale sello.</div>`,
+qs:[
+{q:"¿Qué es el espacio muestral?",o:["El conjunto de todos los resultados posibles de un experimento aleatorio","El resultado que más se repite","El lugar donde se hace el experimento","El número de veces que se repite un experimento"],h:"Son TODOS los resultados que pueden salir.",e:"Es la lista completa de resultados posibles."},
+{q:"¿Cuál es el espacio muestral de lanzar una moneda?",o:["S = {cara, sello}","S = {cara}","S = {1, 2}","S = {cara, sello, canto}"],h:"¿Qué puede salir?",e:"Una moneda puede caer en cara o sello."},
+{q:"¿Cuál es el espacio muestral de lanzar un dado?",o:["S = {1, 2, 3, 4, 5, 6}","S = {1, 6}","S = {0, 1, 2, 3, 4, 5, 6}","S = {6}"],h:"El dado tiene 6 caras.",e:"Cada cara del dado es un resultado posible."},
+{q:"¿Cuántos resultados tiene el espacio muestral de lanzar dos monedas?",o:["4","2","3","6"],h:"CC, CS, SC, …",e:"S = {CC, CS, SC, SS}: 4 resultados."},
+{q:"Completa el espacio muestral de dos monedas: {CC, CS, SC, ___}",o:["SS","CC","CS","SC"],h:"Falta la opción donde ninguna sale cara.",e:"Falta SS (sello y sello)."},
+{q:"En una bolsa hay una balota roja, una azul y una verde. ¿Cuál es el espacio muestral al sacar una?",o:["{roja, azul, verde}","{roja}","{roja, azul}","{1, 2, 3, 4}"],h:"¿Qué colores pueden salir?",e:"Puede salir cualquiera de las tres."},
+{q:"Una ruleta tiene 4 colores: amarillo, rojo, azul y verde. ¿Cuántos elementos tiene su espacio muestral?",o:["4","1","2","8"],h:"Cuenta los colores.",e:"Cada color es un resultado: 4 elementos."},
+{q:"¿Con qué símbolos se encierra el espacio muestral?",o:["Llaves { }","Paréntesis ( )","Corchetes [ ]","Comillas « »"],h:"Es un conjunto.",e:"Los conjuntos se escriben entre llaves."},
+{q:"Al lanzar un dado, ¿cuáles resultados son números pares?",o:["{2, 4, 6}","{1, 3, 5}","{2, 4}","{6}"],h:"Pares: se pueden dividir entre 2.",e:"Los pares del dado son 2, 4 y 6."},
+{q:"Si se lanza una moneda y un dado, ¿cuántos resultados tiene el espacio muestral?",o:["12","8","6","2"],h:"Cada cara de la moneda puede ir con 6 números.",e:"2 × 6 = 12 resultados (C1, C2… S6)."},
+{q:"Se elige al azar un día de la semana. ¿Cuántos elementos tiene el espacio muestral?",o:["7","5","1","30"],h:"Lunes, martes…",e:"La semana tiene 7 días."}],
+open:[
+{q:"Escribe el espacio muestral de elegir un sabor de helado entre fresa, chocolate y vainilla.",a:"S = {fresa, chocolate, vainilla}. Tiene 3 elementos."},
+{q:"Escribe el espacio muestral de lanzar una moneda y un dado.",a:"S = {C1, C2, C3, C4, C5, C6, S1, S2, S3, S4, S5, S6}. Tiene 12 elementos."},
+{q:"Pedro dice que el espacio muestral de lanzar dos monedas es {CC, CS, SS}. ¿Qué error cometió?",a:"Le falta SC. CS (primera cara, segunda sello) y SC (primera sello, segunda cara) son resultados diferentes. El correcto es {CC, CS, SC, SS}."},
+{q:"Inventa un experimento aleatorio y escribe su espacio muestral.",a:"Ejemplo: elegir al azar una fruta de una canasta con mango, banano y guayaba. S = {mango, banano, guayaba}. Vale cualquier ejemplo con todos sus resultados entre llaves."}]},
+{id:"arbol",name:"Diagrama de árbol",desc:"Dibujar todas las posibilidades con ramas para no olvidar ninguna.",
+exp:`<h3>¿Qué es?</h3><p>Es un dibujo con <b>ramas</b> que muestra, en orden, <b>todos los resultados posibles</b> de un experimento. Cada <b>camino completo</b> (de la raíz al final) es <b>un resultado</b>.</p>
+<h3>Ejemplo: ¿cómo me visto?</h3><p>Tengo 2 camisetas (blanca, azul) y 2 pantalones (jean, sudadera).</p>
+<pre class="tree">blanca ─┬─ jean     → blanca-jean
+        └─ sudadera → blanca-sudadera
+azul ───┬─ jean     → azul-jean
+        └─ sudadera → azul-sudadera</pre>
+<p>Hay <b>4 caminos</b>, entonces hay <b>4 combinaciones</b> posibles.</p>
+<h3>Pasos</h3><p>1. Pon las opciones de la primera elección. 2. De cada una, saca ramas con las opciones de la segunda elección. 3. Sigue así con cada elección. 4. Cuenta los caminos.</p>
+<div class="tip"><b>Truco:</b> cuenta los finales de las ramas. Ese número es el total de resultados posibles.</div>`,
+qs:[
+{q:"¿Para qué sirve un diagrama de árbol?",o:["Para ver de forma organizada todos los resultados posibles","Para medir la altura de los árboles","Para dibujar figuras geométricas","Para hacer gráficas de barras"],h:"Piensa en las ramas y los caminos.",e:"Organiza todas las posibilidades para no olvidar ninguna."},
+{q:"En un diagrama de árbol, ¿qué representa cada camino completo?",o:["Un resultado posible","El total de resultados","Una pregunta","Nada"],h:"De la raíz hasta el final de una rama.",e:"Cada camino es un resultado del experimento."},
+{q:"Tienes 2 camisetas y 3 pantalones. ¿Cuántas combinaciones muestra el diagrama de árbol?",o:["6","5","3","9"],h:"De cada camiseta salen 3 ramas.",e:"2 camisetas × 3 pantalones = 6 caminos."},
+{q:"Si lanzas una moneda dos veces, ¿cuántos caminos tiene el diagrama de árbol?",o:["4","2","3","8"],h:"De cara salen 2 ramas y de sello otras 2.",e:"CC, CS, SC, SS: 4 caminos."},
+{q:"Si lanzas una moneda tres veces, ¿cuántos caminos tiene el diagrama de árbol?",o:["8","6","4","9"],h:"Cada vez que lanzas, las ramas se duplican.",e:"2 × 2 × 2 = 8 caminos."},
+{q:"Un restaurante en Neiva ofrece 2 sopas (pollo, verduras) y 3 platos fuertes. ¿Cuántos almuerzos diferentes se pueden armar?",o:["6","5","2","3"],h:"De cada sopa salen 3 ramas.",e:"2 × 3 = 6 almuerzos diferentes."},
+{q:"En el diagrama de árbol de lanzar un dado, ¿cuántas ramas salen en el primer nivel?",o:["6","2","1","12"],h:"¿Cuántas caras tiene el dado?",e:"Una rama por cada cara: 6."},
+{q:"En el diagrama de lanzar una moneda y luego un dado, ¿cuántas ramas salen de «cara»?",o:["6","2","1","12"],h:"Después de la moneda viene el dado.",e:"De cara salen 6 ramas, una por cada número del dado."},
+{q:"En ese mismo diagrama (moneda y luego dado), ¿cuántos resultados hay en total?",o:["12","8","6","2"],h:"6 ramas de cara + 6 ramas de sello.",e:"6 + 6 = 12 resultados."},
+{q:"Valentina elige helado de 3 sabores y lo puede pedir en cono o en vaso. ¿Cuántas opciones tiene?",o:["6","5","3","9"],h:"Haz el árbol: sabor y luego recipiente.",e:"3 sabores × 2 recipientes = 6 opciones."},
+{q:"¿Qué ventaja tiene el diagrama de árbol?",o:["Permite ver todas las posibilidades sin olvidar ninguna","Da el resultado que va a salir","Elimina los resultados que no gustan","Solo sirve para monedas"],h:"Piensa en el orden y la organización.",e:"Ayuda a listar todas las posibilidades de forma ordenada."}],
+open:[
+{q:"Tienes 2 camisetas (roja, negra) y 2 gorras (blanca, gris). Escribe todos los caminos del diagrama de árbol.",a:"roja-blanca, roja-gris, negra-blanca, negra-gris. Son 4 combinaciones."},
+{q:"Escribe los caminos del diagrama de árbol al lanzar una moneda tres veces.",a:"CCC, CCS, CSC, CSS, SCC, SCS, SSC, SSS. Son 8 resultados."},
+{q:"Una tienda vende jugo de mango, mora o lulo, en agua o en leche. Escribe todas las opciones usando un diagrama de árbol.",a:"mango-agua, mango-leche, mora-agua, mora-leche, lulo-agua, lulo-leche. Son 6 opciones."},
+{q:"Explica cómo se cuenta el total de resultados en un diagrama de árbol.",a:"Se cuentan los caminos completos, es decir, los finales de las últimas ramas. Cada final es un resultado posible."}]},
+{id:"multiplicacion",name:"Principio de la multiplicación",desc:"Calcular el total de posibilidades sin tener que escribirlas todas.",
+exp:`<h3>La regla</h3><p>Si una elección se puede hacer de <b>m</b> maneras y otra de <b>n</b> maneras, las dos juntas se pueden hacer de <b>m × n</b> maneras. Funciona igual con tres o más elecciones.</p>
+<h3>Ejemplos</h3>
+<div class="xt"><table><thead><tr><th>Situación</th><th>Cálculo</th><th>Total</th></tr></thead><tbody>
+<tr><td>3 camisetas y 4 pantalones</td><td>3 × 4</td><td>12</td></tr>
+<tr><td>3 camisetas, 4 pantalones y 2 pares de zapatos</td><td>3 × 4 × 2</td><td>24</td></tr>
+<tr><td>Almuerzo: 2 sopas, 3 platos fuertes y 2 jugos</td><td>2 × 3 × 2</td><td>12</td></tr>
+<tr><td>Lanzar un dado dos veces</td><td>6 × 6</td><td>36</td></tr>
+<tr><td>Candado de 3 dígitos (0 a 9)</td><td>10 × 10 × 10</td><td>1.000</td></tr>
+</tbody></table></div>
+<h3>Árbol o multiplicación</h3><p>El diagrama de árbol muestra <b>cuáles</b> son los resultados. El principio de la multiplicación dice <b>cuántos</b> son, de forma rápida, sin dibujarlos. Con muchas opciones, el árbol sería enorme: ahí conviene multiplicar.</p>
+<div class="tip"><b>Truco:</b> pregúntate cuántas elecciones hay y cuántas opciones tiene cada una. Luego multiplica.</div>`,
+qs:[
+{q:"¿Qué dice el principio de la multiplicación?",o:["Si una elección se hace de m maneras y otra de n, juntas se hacen de m × n maneras","Que siempre hay que sumar las opciones","Que solo hay un resultado posible","Que hay que dibujar todos los resultados"],h:"El nombre del principio da la pista.",e:"Se multiplica el número de opciones de cada elección."},
+{q:"Con 3 camisetas y 4 pantalones, ¿cuántas combinaciones hay?",o:["12","7","34","1"],h:"Multiplica, no sumes.",e:"3 × 4 = 12."},
+{q:"Con 3 camisetas, 4 pantalones y 2 pares de zapatos, ¿cuántas formas de vestirse hay?",o:["24","9","12","14"],h:"Multiplica las tres cantidades.",e:"3 × 4 × 2 = 24."},
+{q:"Un restaurante ofrece 2 sopas, 3 platos fuertes y 2 jugos. ¿Cuántos menús diferentes hay?",o:["12","7","6","10"],h:"Una elección de cada grupo.",e:"2 × 3 × 2 = 12 menús."},
+{q:"Si lanzas una moneda 3 veces, ¿cuántos resultados posibles hay?",o:["8","6","3","9"],h:"Cada lanzamiento tiene 2 opciones.",e:"2 × 2 × 2 = 8."},
+{q:"Si lanzas un dado dos veces, ¿cuántos resultados posibles hay?",o:["36","12","6","18"],h:"6 opciones la primera vez y 6 la segunda.",e:"6 × 6 = 36."},
+{q:"Un candado tiene 3 ruedas, cada una con los dígitos del 0 al 9. ¿Cuántas claves diferentes hay?",o:["1.000","30","27","999"],h:"Cada rueda tiene 10 opciones.",e:"10 × 10 × 10 = 1.000 claves."},
+{q:"De Neiva a Garzón hay 3 rutas y de Garzón a Pitalito hay 2. ¿De cuántas maneras se puede ir de Neiva a Pitalito pasando por Garzón?",o:["6","5","3","2"],h:"Cada ruta del primer tramo se combina con las del segundo.",e:"3 × 2 = 6 maneras."},
+{q:"¿Qué ventaja tiene el principio de la multiplicación frente al diagrama de árbol?",o:["Da el total rápido sin tener que dibujar ni escribir todos los resultados","Muestra cuáles son todos los resultados","Siempre da un número más pequeño","No tiene ninguna ventaja"],h:"Piensa en el candado de 1.000 claves.",e:"Permite calcular el total sin listar cada resultado."},
+{q:"Al lanzar una moneda y un dado, ¿cuántos resultados posibles hay?",o:["12","8","6","3"],h:"2 opciones por 6 opciones.",e:"2 × 6 = 12."},
+{q:"Para la clase de educación física hay 2 sudaderas y 3 camisetas. Si la respuesta de Ana fue «5 combinaciones», ¿qué error cometió?",o:["Sumó en lugar de multiplicar; son 6","Multiplicó en lugar de sumar","No cometió error","Contó de más; son 4"],h:"2 + 3 = 5, pero ¿es la operación correcta?",e:"Se debe multiplicar: 2 × 3 = 6."}],
+open:[
+{q:"Laura tiene 4 blusas y 3 faldas. ¿De cuántas maneras se puede vestir? Explica cómo lo calculaste.",a:"4 × 3 = 12 maneras. Se multiplica el número de blusas por el número de faldas, porque cada blusa se puede combinar con cada falda."},
+{q:"Una heladería ofrece 5 sabores, 2 recipientes (cono o vaso) y 3 coberturas. ¿Cuántos helados diferentes se pueden pedir?",a:"5 × 2 × 3 = 30 helados diferentes."},
+{q:"¿Cuántas claves diferentes de 4 dígitos (del 0 al 9) se pueden formar para un celular?",a:"10 × 10 × 10 × 10 = 10.000 claves."},
+{q:"¿Cuándo conviene usar el diagrama de árbol y cuándo el principio de la multiplicación?",a:"El árbol conviene cuando hay pocas opciones y se necesita ver cuáles son los resultados. El principio de la multiplicación conviene cuando solo se necesita saber cuántos son o hay muchas opciones."}]}
+]},
+{id:"fis",name:"Física",c:"--fis",pending:true},
+{id:"len",name:"Castellano",c:"--lang",soft:"--lang-soft",desc:"Periodo IV (16 sep – 20 nov) · Profe Deicy Medina. Las evaluaciones son tipo Saber: lee bien y justifica tu respuesta.",topics:[
+{id:"dramatico",name:"El género dramático",desc:"Obras para representar en teatro: diálogo, acotaciones, actos, escenas y subgéneros.",
+exp:`<h3>¿Qué es?</h3><p>El <b>género dramático</b> reúne las obras escritas para ser <b>representadas</b> por actores en un escenario. La historia no la cuenta un narrador: avanza por lo que dicen y hacen los personajes.</p>
+<div class="xcards">
+<div class="xc"><b>Diálogo</b><span>Lo que hablan los personajes. Antes de cada parlamento va el nombre de quien habla.</span></div>
+<div class="xc"><b>Acotaciones</b><span>Indicaciones del autor, casi siempre entre paréntesis: gestos, movimientos, tono, escenario.</span><i>(Entra corriendo, asustada.)</i></div>
+<div class="xc"><b>Actos y escenas</b><span>El acto es una parte grande de la obra. La escena cambia cuando entra o sale un personaje.</span></div>
+<div class="xc"><b>Conflicto</b><span>El problema que enfrenta a los personajes y mueve la historia.</span></div></div>
+<h3>Subgéneros</h3>
+<div class="xt"><table><thead><tr><th>Subgénero</th><th>Cómo es</th></tr></thead><tbody>
+<tr><td><b>Tragedia</b></td><td>Conflictos graves y final triste o fatal.</td></tr>
+<tr><td><b>Comedia</b></td><td>Situaciones de humor y final feliz.</td></tr>
+<tr><td><b>Drama</b></td><td>Mezcla momentos serios y alegres, como la vida real.</td></tr>
+</tbody></table></div>
+<h3>Para montar la obra</h3><p>Se necesitan actores, director, escenografía, vestuario, iluminación y sonido.</p>
+<div class="tip"><b>Ejemplo:</b><br>DOÑA ROSA: (Mirando por la ventana.) ¿Oíste eso, Julián?<br>JULIÁN: (Sin levantar la cabeza.) Es el viento, mamá.<br>Lo que está entre paréntesis son <b>acotaciones</b>; lo demás es <b>diálogo</b>.</div>`,
+qs:[
+{q:"¿Qué caracteriza a las obras del género dramático?",o:["Están escritas para ser representadas por actores","Están escritas en verso para expresar sentimientos","Las cuenta siempre un narrador","Solo se leen en silencio"],h:"Piensa en el teatro.",e:"Las obras dramáticas se escriben para representarse en un escenario."},
+{q:"En una obra de teatro, las indicaciones que da el autor sobre gestos, movimientos o el escenario se llaman:",o:["Acotaciones","Diálogos","Estrofas","Párrafos"],h:"Casi siempre van entre paréntesis.",e:"Las acotaciones orientan a actores y director sobre cómo representar la obra."},
+{q:"En «JULIÁN: (Sin levantar la cabeza.) Es el viento, mamá», ¿qué parte es la acotación?",o:["(Sin levantar la cabeza.)","JULIÁN","Es el viento, mamá","mamá"],h:"Busca lo que está entre paréntesis.",e:"La acotación indica cómo actúa el personaje: sin levantar la cabeza."},
+{q:"¿Cómo avanza la historia en una obra dramática?",o:["Por medio del diálogo y las acciones de los personajes","Por lo que cuenta un narrador","Por las rimas de los versos","Por las imágenes del libro"],h:"En el teatro no hay narrador.",e:"El diálogo y la acción de los personajes cuentan la historia."},
+{q:"Una obra con situaciones de humor y final feliz es una:",o:["Comedia","Tragedia","Biografía","Fábula"],h:"Te hace reír.",e:"La comedia usa el humor y termina bien."},
+{q:"Una obra con conflictos graves y un final triste o fatal es una:",o:["Tragedia","Comedia","Publicidad","Autobiografía"],h:"Es lo contrario de la comedia.",e:"La tragedia termina mal para los protagonistas."},
+{q:"¿Cuándo cambia una escena en el teatro?",o:["Cuando entra o sale un personaje","Cuando termina la obra","Cuando el público aplaude","Cuando un personaje habla"],h:"Tiene que ver con quién está en el escenario.",e:"Una escena nueva empieza cuando cambian los personajes presentes."}],
+open:[
+{q:"Escribe un diálogo corto (3 parlamentos) entre dos personajes que incluya al menos dos acotaciones.",a:"Ejemplo: MARÍA: (Entrando con prisa.) ¡Se va el bus para Garzón! / PEDRO: (Buscando la maleta.) ¡Espérame un segundo! / MARÍA: (Mirando el reloj.) No hay tiempo. Vale cualquier diálogo con nombres de personajes y acotaciones entre paréntesis."},
+{q:"Explica la diferencia entre tragedia y comedia.",a:"La tragedia presenta conflictos graves y termina con un final triste o fatal. La comedia presenta situaciones de humor y termina con un final feliz."},
+{q:"¿Para qué sirven las acotaciones en una obra de teatro?",a:"Para indicar a los actores y al director cómo deben actuar (gestos, movimientos, tono de voz) y cómo es el escenario."}]},
+{id:"variantes",name:"Variantes lingüísticas",desc:"Formas distintas de hablar el mismo idioma según la región, el grupo social, la situación y la época.",
+exp:`<h3>¿Qué son?</h3><p>Son las diferentes <b>formas de usar una misma lengua</b>. Todos hablamos español, pero no lo hablamos igual: depende de dónde somos, con quién hablamos y en qué situación estamos.</p>
+<div class="xt"><table><thead><tr><th>Variante</th><th>Depende de…</th><th>Ejemplo</th></tr></thead><tbody>
+<tr><td><b>Geográfica</b> (diatópica)</td><td>La región donde se vive</td><td>El acento opita, paisa, costeño o rolo. Al bus le dicen «buseta», «chiva» o «colectivo» según la región.</td></tr>
+<tr><td><b>Social</b> (diastrática)</td><td>El grupo social, la edad o la profesión</td><td>La jerga de los jóvenes («parce», «bacano») o el vocabulario de los médicos.</td></tr>
+<tr><td><b>Situacional</b> (diafásica)</td><td>La situación comunicativa</td><td>Formal con la rectora: «Buenos días, ¿cómo está usted?». Informal con amigos: «¡Quiubo! ¿Qué más?».</td></tr>
+<tr><td><b>Histórica</b> (diacrónica)</td><td>La época</td><td>Antes se decía «vuestra merced»; hoy decimos «usted».</td></tr>
+</tbody></table></div>
+<p>Las formas regionales de hablar se llaman <b>dialectos</b>. Ningún dialecto es mejor que otro.</p>
+<div class="tip"><b>Truco:</b> pregúntate <b>dónde</b> (geográfica), <b>quién</b> (social), <b>en qué situación</b> (situacional) o <b>cuándo</b> (histórica).</div>`,
+qs:[
+{q:"¿Qué son las variantes lingüísticas?",o:["Las diferentes formas de usar una misma lengua","Los distintos idiomas del mundo","Los errores de ortografía","Las reglas de la gramática"],h:"Todos hablamos español, pero no igual.",e:"Son las formas en que cambia una lengua según región, grupo social, situación o época."},
+{q:"Una persona de Neiva y una de Medellín hablan español con acentos y palabras distintas. ¿Qué variante es?",o:["Geográfica","Histórica","Situacional","Social"],h:"La diferencia está en dónde viven.",e:"La variante geográfica depende de la región."},
+{q:"Sofía le dice a su amiga «¡Quiubo, qué más!», pero a la rectora le dice «Buenos días, ¿cómo está usted?». ¿Qué variante usa?",o:["Situacional","Geográfica","Histórica","Dialecto"],h:"Es la misma persona hablando en dos momentos distintos.",e:"Cambia su forma de hablar según la situación: formal o informal."},
+{q:"Los jóvenes usan palabras como «parce» o «bacano» que los abuelos casi no usan. ¿Qué variante es?",o:["Social","Histórica","Geográfica","Situacional"],h:"Depende del grupo (la edad).",e:"La variante social depende del grupo, la edad o la profesión."},
+{q:"Antes se decía «vuestra merced» y hoy decimos «usted». ¿Qué variante muestra esto?",o:["Histórica","Social","Situacional","Geográfica"],h:"¿Qué cambió? La época.",e:"La variante histórica muestra cómo cambia la lengua con el tiempo."},
+{q:"Las formas de hablar propias de una región se llaman:",o:["Dialectos","Idiomas","Acotaciones","Conectores"],h:"El opita y el paisa son ejemplos.",e:"Los dialectos son las variantes de una lengua en una región."},
+{q:"¿Cuál de estas afirmaciones es correcta?",o:["Ningún dialecto es mejor que otro","El dialecto de la capital es el único correcto","Hablar con acento es un error","Las variantes solo existen en el español"],h:"Piensa en el respeto por la forma de hablar de los demás.",e:"Todas las variantes son válidas; lo importante es adecuarse a la situación."}],
+open:[
+{q:"Escribe cómo saludarías a tu mejor amiga y cómo saludarías al rector. ¿Qué variante lingüística estás usando?",a:"Ejemplo: amiga «¡Hola, ¿qué más?!»; rector «Buenos días, señor rector, ¿cómo está?». Es la variante situacional (o diafásica): cambia según la situación formal o informal."},
+{q:"Escribe dos palabras o expresiones que se usen en el Huila y explica qué variante lingüística representan.",a:"Respuesta libre (por ejemplo, expresiones de la región para saludar o referirse a comidas típicas). Representan la variante geográfica o diatópica, porque dependen de la región."},
+{q:"Explica con tus palabras qué es la variante histórica y da un ejemplo.",a:"Es el cambio de la lengua a través del tiempo. Ejemplo: antes se decía «vuestra merced» y hoy «usted»."}]},
+{id:"conectores",name:"Conectores",desc:"Palabras que unen ideas: adición, contraste, causa, consecuencia, orden y conclusión.",
+exp:`<h3>¿Qué son?</h3><p>Los <b>conectores</b> son palabras o expresiones que <b>unen ideas</b> y muestran la relación entre ellas. Hacen que un texto sea claro y ordenado.</p>
+<div class="xt"><table><thead><tr><th>Tipo</th><th>Para qué sirve</th><th>Conectores</th></tr></thead><tbody>
+<tr><td><b>Adición</b></td><td>Sumar una idea</td><td>y, además, también, asimismo</td></tr>
+<tr><td><b>Contraste</b></td><td>Oponer ideas</td><td>pero, sin embargo, aunque, en cambio</td></tr>
+<tr><td><b>Causa</b></td><td>Decir el porqué</td><td>porque, ya que, puesto que</td></tr>
+<tr><td><b>Consecuencia</b></td><td>Decir el resultado</td><td>por lo tanto, por eso, así que</td></tr>
+<tr><td><b>Orden o tiempo</b></td><td>Organizar pasos</td><td>primero, luego, después, finalmente</td></tr>
+<tr><td><b>Ejemplificación</b></td><td>Dar ejemplos</td><td>por ejemplo, es decir</td></tr>
+<tr><td><b>Conclusión</b></td><td>Cerrar</td><td>en conclusión, en resumen, en síntesis</td></tr>
+</tbody></table></div>
+<div class="tip"><b>Causa o consecuencia:</b> «No fui al río <u>porque</u> llovió» (causa: la lluvia). «Llovió, <u>por eso</u> no fui al río» (consecuencia: no fui).</div>`,
+qs:[
+{q:"¿Para qué sirven los conectores?",o:["Para unir ideas y mostrar la relación entre ellas","Para separar sílabas","Para marcar la tilde","Para indicar gestos en el teatro"],h:"Su nombre lo dice: conectan.",e:"Unen oraciones e ideas y dan coherencia al texto."},
+{q:"«Quería ir al Desierto de la Tatacoa, ______ estaba lloviendo.» ¿Qué conector va?",o:["pero","porque","además","por ejemplo"],h:"Las dos ideas se oponen.",e:"«Pero» es de contraste: une ideas opuestas."},
+{q:"«No fui al colegio ______ estaba enfermo.» ¿Qué conector va?",o:["porque","sin embargo","finalmente","además"],h:"La segunda parte explica el porqué.",e:"«Porque» es un conector de causa."},
+{q:"«Estudié toda la semana; ______, me fue bien en el examen.» ¿Qué conector va?",o:["por lo tanto","aunque","primero","en cambio"],h:"Lo segundo es el resultado de lo primero.",e:"«Por lo tanto» es de consecuencia."},
+{q:"El conector «sin embargo» es de tipo:",o:["Contraste","Adición","Causa","Orden"],h:"Es parecido a «pero».",e:"«Sin embargo» opone ideas, igual que «pero»."},
+{q:"¿Cuál de estos conectores sirve para ordenar los pasos de una receta?",o:["Primero","Aunque","Porque","En cambio"],h:"Piensa en cómo explicas una receta de bizcochos de achira.",e:"«Primero, luego, después, finalmente» ordenan pasos."},
+{q:"«En conclusión» es un conector que se usa:",o:["Al final, para cerrar o resumir","Al principio, para saludar","Para dar un ejemplo","Para oponer dos ideas"],h:"La palabra «conclusión» te da la pista.",e:"Los conectores de conclusión cierran el texto."}],
+open:[
+{q:"Une estas dos oraciones con un conector de contraste: «Me gusta el fútbol.» «No juego muy bien.»",a:"Ejemplo: Me gusta el fútbol, pero no juego muy bien. (También sirven «sin embargo» o «aunque».)"},
+{q:"Escribe una oración con un conector de causa y otra con un conector de consecuencia.",a:"Ejemplo: Llegué tarde porque el bus se varó (causa). El bus se varó; por eso llegué tarde (consecuencia)."},
+{q:"Escribe en 3 pasos cómo te alistas para ir al colegio, usando conectores de orden.",a:"Ejemplo: Primero me baño. Luego me pongo el uniforme y desayuno. Finalmente, reviso la maleta y salgo."}]},
+{id:"puntuacion",name:"Signos de puntuación y tilde diacrítica",desc:"Punto, coma, punto y coma, dos puntos, comillas, signos de pregunta y exclamación, y tilde diacrítica.",
+exp:`<h3>Signos de puntuación</h3>
+<div class="xt"><table><thead><tr><th>Signo</th><th>Se usa para…</th><th>Ejemplo</th></tr></thead><tbody>
+<tr><td><b>Punto (.)</b></td><td>Seguido: dentro del párrafo. Aparte: cambia de párrafo. Final: termina el texto.</td><td>Llovió. Nos quedamos en casa.</td></tr>
+<tr><td><b>Coma (,)</b></td><td>Separar elementos de una enumeración, llamar a alguien (vocativo) o encerrar una explicación.</td><td>Compré arroz, papa y plátano. / Laura, ven acá.</td></tr>
+<tr><td><b>Punto y coma (;)</b></td><td>Separar ideas relacionadas o antes de «sin embargo», «por lo tanto».</td><td>Estudió mucho; por eso ganó.</td></tr>
+<tr><td><b>Dos puntos (:)</b></td><td>Antes de una enumeración, de una cita y después del saludo de una carta.</td><td>Traje tres cosas: lápiz, borrador y regla.</td></tr>
+<tr><td><b>Comillas (« »)</b></td><td>Citar palabras exactas de alguien.</td><td>La profe dijo: «Lean el capítulo dos».</td></tr>
+<tr><td><b>¿? y ¡!</b></td><td>Preguntas y exclamaciones. En español se abren y se cierran.</td><td>¿Vienes? ¡Qué alegría!</td></tr>
+</tbody></table></div>
+<h3>Tilde diacrítica</h3><p>Es la tilde que <b>diferencia palabras que se escriben igual</b> pero significan distinto.</p>
+<div class="xt"><table><thead><tr><th>Con tilde</th><th>Sin tilde</th></tr></thead><tbody>
+<tr><td><b>él</b> (persona): Él llegó.</td><td><b>el</b> (artículo): el perro</td></tr>
+<tr><td><b>tú</b> (persona): Tú ganaste.</td><td><b>tu</b> (de ti): tu cuaderno</td></tr>
+<tr><td><b>mí</b> (persona): Es para mí.</td><td><b>mi</b> (de mí): mi casa</td></tr>
+<tr><td><b>sí</b> (afirmación): Sí quiero.</td><td><b>si</b> (condición): si llueve…</td></tr>
+<tr><td><b>té</b> (bebida): un té caliente</td><td><b>te</b> (pronombre): te quiero</td></tr>
+<tr><td><b>más</b> (cantidad): quiero más</td><td><b>mas</b> (= pero)</td></tr>
+<tr><td><b>qué, cómo, dónde</b> (pregunta o exclamación)</td><td><b>que, como, donde</b> (sin pregunta)</td></tr>
+</tbody></table></div>
+<div class="tip"><b>Truco:</b> si puedes cambiar «tu» por «tuyo» («el cuaderno tuyo»), va sin tilde. Si es la persona («tú»), lleva tilde.</div>`,
+qs:[
+{q:"¿Qué signo se usa para separar los elementos de una enumeración?",o:["La coma","El punto final","Las comillas","Los signos de exclamación"],h:"Arroz__ papa__ plátano.",e:"La coma separa los elementos de una lista."},
+{q:"¿Qué signo va antes de una enumeración, como en «Traje tres cosas__ lápiz, borrador y regla»?",o:["Dos puntos","Punto y coma","Coma","Comillas"],h:"Anuncia lo que viene.",e:"Los dos puntos introducen una enumeración."},
+{q:"¿Cuál oración está bien puntuada?",o:["¿Vas a ir al Malecón del río Magdalena?","Vas a ir al Malecón del río Magdalena?","¿Vas a ir al Malecón del río Magdalena","Vas a ir? al Malecón del río Magdalena"],h:"En español la pregunta se abre y se cierra.",e:"Los signos de interrogación van al inicio y al final de la pregunta."},
+{q:"En «Laura, ven a almorzar», ¿para qué se usa la coma?",o:["Para separar el nombre de la persona a quien se llama (vocativo)","Para enumerar","Para cerrar una pregunta","Para citar palabras"],h:"Laura es a quien le hablan.",e:"El vocativo (nombre de a quien se llama) se separa con coma."},
+{q:"¿Cuál oración usa bien la tilde diacrítica?",o:["Tú traes tu cuaderno.","Tu traes tú cuaderno.","Tú traes tú cuaderno.","Tu traes tu cuaderno."],h:"«Tú» es la persona; «tu» es de quién es el cuaderno.",e:"Tú (persona) lleva tilde; tu (posesivo) no."},
+{q:"Completa: «______ llueve, no iremos al río.»",o:["Si","Sí","Sé","Se"],h:"Es una condición, no una afirmación.",e:"«Si» sin tilde expresa condición. «Sí» con tilde es afirmación."},
+{q:"¿Cuál oración está bien escrita?",o:["Él me regaló el libro.","El me regaló él libro.","Él me regaló él libro.","El me regaló el libro."],h:"¿Quién regaló? Una persona.",e:"Él (persona) lleva tilde; el (artículo, antes de libro) no."}],
+open:[
+{q:"Puntúa correctamente: «mamá dijo traigan arroz papa y plátano para el sancocho»",a:"Mamá dijo: «Traigan arroz, papa y plátano para el sancocho»."},
+{q:"Escribe una oración con «mí» (con tilde) y otra con «mi» (sin tilde).",a:"Ejemplo: Ese regalo es para mí. / Mi perro se llama Toby."},
+{q:"Explica qué es la tilde diacrítica y da un ejemplo.",a:"Es la tilde que diferencia palabras que se escriben igual pero tienen distinto significado o función. Ejemplo: «sí» (afirmación) y «si» (condición)."}]},
+{id:"biografia",name:"Biografía y autobiografía",desc:"Contar la vida de una persona: quién la narra, en qué persona y con qué estructura.",
+exp:`<h3>Diferencia clave</h3>
+<div class="xcards">
+<div class="xc"><b>Biografía</b><span>Otra persona cuenta la vida de alguien. Se escribe en <u>tercera persona</u> (él, ella).</span><i>«José Eustasio Rivera nació en 1888…»</i></div>
+<div class="xc"><b>Autobiografía</b><span>La persona cuenta su propia vida. Se escribe en <u>primera persona</u> (yo).</span><i>«Yo nací en Neiva en 2013…»</i></div></div>
+<p class="small">«Auto» significa «uno mismo», como en autorretrato.</p>
+<h3>Estructura (orden cronológico)</h3><p>1. Nacimiento: fecha, lugar, familia. 2. Infancia y estudios. 3. Hechos importantes y logros. 4. Presente, o muerte y legado.</p>
+<h3>Ejemplo del Huila</h3><p><b>José Eustasio Rivera</b> nació en 1888 en el Huila, en el municipio que hoy lleva su nombre (Rivera). Fue abogado, poeta y novelista. En 1924 publicó <i>La vorágine</i>, una de las novelas más importantes de Colombia, que denuncia la explotación de los caucheros en la selva. Murió en Nueva York en 1928.</p>
+<div class="tip"><b>Para escribir una biografía:</b> busca datos verdaderos, ordénalos por fechas y usa conectores de tiempo (primero, años después, finalmente).</div>`,
+qs:[
+{q:"¿Qué es una biografía?",o:["La historia de la vida de una persona contada por otra","La historia de la vida que cuenta la misma persona","Un cuento inventado","Una obra de teatro"],h:"Alguien escribe sobre la vida de otro.",e:"En la biografía otra persona narra la vida de alguien."},
+{q:"¿En qué persona gramatical se escribe una autobiografía?",o:["Primera persona (yo)","Tercera persona (él, ella)","Segunda persona (tú)","No usa personas"],h:"La persona cuenta su propia vida.",e:"En la autobiografía el autor habla de sí mismo: «yo»."},
+{q:"«Nací en Neiva un martes de lluvia. Mis papás cuentan que…» Este texto es:",o:["Una autobiografía","Una biografía","Una propaganda","Una obra dramática"],h:"Mira las palabras «nací» y «mis».",e:"Está en primera persona: es autobiografía."},
+{q:"¿En qué orden se presentan normalmente los hechos de una biografía?",o:["Cronológico: del nacimiento al presente o la muerte","Del más importante al menos importante","En orden alfabético","Al azar"],h:"Piensa en una línea de tiempo.",e:"Se siguen las fechas en orden: orden cronológico."},
+{q:"¿Qué escribió José Eustasio Rivera, escritor nacido en el Huila?",o:["La vorágine","Cien años de soledad","María","El coronel no tiene quien le escriba"],h:"Es una novela sobre la selva y los caucheros.",e:"Rivera escribió La vorágine (1924)."},
+{q:"El prefijo «auto» de autobiografía significa:",o:["Uno mismo","Carro","Otro","Antiguo"],h:"Como en «autorretrato».",e:"Auto = uno mismo."},
+{q:"¿Cuál de estos datos NO debería ir en una biografía?",o:["Hechos inventados para que sea más emocionante","La fecha y el lugar de nacimiento","Sus estudios","Sus logros más importantes"],h:"La biografía cuenta una vida real.",e:"La biografía se basa en hechos reales y verificables."}],
+open:[
+{q:"Escribe el inicio de tu autobiografía en 3 o 4 líneas (nacimiento, familia y algo de tu infancia).",a:"Ejemplo: Nací en Neiva, Huila. Vivo con mi papá y mi familia. Cuando era pequeña me gustaba… Debe estar en primera persona y en orden cronológico."},
+{q:"Explica dos diferencias entre biografía y autobiografía.",a:"1) La biografía la escribe otra persona y la autobiografía la persona misma. 2) La biografía va en tercera persona y la autobiografía en primera persona."},
+{q:"Convierte esta frase de autobiografía en biografía: «Nací en Neiva y estudié en el Colegio Claretiano».",a:"Ella (o el nombre) nació en Neiva y estudió en el Colegio Claretiano."}]},
+{id:"publicidad",name:"Publicidad y propaganda",desc:"Textos que buscan convencer: vender un producto o difundir una idea.",
+exp:`<h3>La diferencia</h3>
+<div class="xcards">
+<div class="xc"><b>Publicidad</b><span>Busca <u>vender</u> un producto o servicio. Tiene fin comercial.</span><i>«Bizcochos de achira Doña Tere: ¡el sabor del Huila!»</i></div>
+<div class="xc"><b>Propaganda</b><span>Busca <u>difundir una idea</u>, un valor o una causa (social, política, religiosa). No vende nada.</span><i>«Cuida el río Las Ceibas: no botes basura.»</i></div></div>
+<h3>Elementos de un anuncio</h3><p><b>Eslogan</b> (frase corta y fácil de recordar) · <b>imagen</b> · <b>logotipo</b> · <b>texto</b> que explica · <b>público objetivo</b> (a quién va dirigido).</p>
+<h3>Estrategias para convencer</h3><p>Despertar emociones · usar a un personaje famoso · humor · repetición · prometer beneficios («más rápido», «más rico»).</p>
+<div class="tip"><b>Lectura crítica:</b> pregúntate siempre qué quiere que hagas el anuncio y si lo que promete es verdad.</div>`,
+qs:[
+{q:"¿Cuál es el propósito principal de la publicidad?",o:["Vender un producto o servicio","Difundir una idea sin vender nada","Contar la vida de alguien","Representar una obra de teatro"],h:"Tiene fin comercial.",e:"La publicidad busca que compremos algo."},
+{q:"¿Cuál es el propósito principal de la propaganda?",o:["Difundir ideas, valores o causas","Vender celulares","Narrar un cuento","Enseñar ortografía"],h:"No vende, convence de una idea.",e:"La propaganda promueve ideas sociales, políticas o religiosas."},
+{q:"«Cuida el río Las Ceibas: no botes basura.» Este mensaje es:",o:["Propaganda","Publicidad","Biografía","Acotación"],h:"¿Te está vendiendo algo?",e:"Promueve una idea (cuidar el río), no un producto: es propaganda."},
+{q:"«Bizcochos de achira Doña Tere: ¡el sabor del Huila!» Este mensaje es:",o:["Publicidad","Propaganda","Texto propositivo","Autobiografía"],h:"Están ofreciendo un producto.",e:"Busca vender bizcochos: es publicidad."},
+{q:"La frase corta y fácil de recordar de un anuncio se llama:",o:["Eslogan","Logotipo","Acotación","Conector"],h:"Ejemplo: «¡el sabor del Huila!».",e:"El eslogan resume el mensaje y se queda en la memoria."},
+{q:"Un anuncio de zapatos deportivos muestra a un futbolista famoso usándolos. ¿Qué estrategia usa?",o:["Personaje famoso","Humor","Repetición","Ninguna"],h:"¿Por qué aparece esa persona?",e:"Usa la fama del deportista para que queramos imitarlo y comprar."},
+{q:"Una campaña dice: «Vacúnate. Protege a tu familia». ¿Qué tipo de texto es?",o:["Propaganda","Publicidad","Biografía","Obra dramática"],h:"Promueve una acción por el bien común.",e:"Es propaganda: difunde una idea de salud pública."}],
+open:[
+{q:"Crea un eslogan para un producto típico del Huila (achiras, café, quesillo…).",a:"Ejemplo: «Café del Huila: despierta con el sabor de la montaña». Debe ser corto, llamativo y fácil de recordar."},
+{q:"Explica la diferencia entre publicidad y propaganda con un ejemplo de cada una.",a:"La publicidad vende un producto o servicio (ej. un anuncio de gaseosa). La propaganda difunde una idea o causa (ej. una campaña para reciclar)."},
+{q:"Escribe un mensaje de propaganda para promover el respeto en el colegio.",a:"Ejemplo: «En el Claretiano nos tratamos bien: respeta, escucha y convive». Debe promover una idea, no vender nada."}]},
+{id:"propositivo",name:"El texto propositivo",desc:"Textos que presentan un problema y proponen soluciones con argumentos.",
+exp:`<h3>¿Qué es?</h3><p>Un <b>texto propositivo</b> es aquel en el que el autor presenta un <b>problema</b> y <b>propone una o varias soluciones</b>, explicando con <b>argumentos</b> por qué funcionarían.</p>
+<h3>Estructura</h3><div class="chain"><span class="ln">Problema<small>¿Qué pasa?</small></span><span class="ar">→</span><span class="ln">Propuesta<small>¿Qué hacer?</small></span><span class="ar">→</span><span class="ln">Argumentos<small>¿Por qué sirve?</small></span><span class="ar">→</span><span class="ln sun">Conclusión<small>Cierre</small></span></div>
+<h3>Ejemplo</h3><p><i>En los descansos el colegio queda lleno de basura (problema). Propongo instalar canecas de colores para reciclar en cada pasillo y que cada curso se turne para vigilarlas (propuesta). Así el colegio estará limpio y aprenderemos a separar residuos, ya que los estudiantes cuidan más lo que sienten como suyo (argumentos). En conclusión, con canecas y compromiso de todos podemos tener un colegio limpio (conclusión).</i></p>
+<div class="tip"><b>Ojo:</b> una propuesta sin argumentos es solo una opinión. Usa conectores de causa («porque», «ya que») para justificar.</div>`,
+qs:[
+{q:"¿Cuál es el propósito de un texto propositivo?",o:["Presentar un problema y proponer soluciones argumentadas","Vender un producto","Contar la vida de una persona","Describir un paisaje"],h:"Su nombre viene de «proponer».",e:"Plantea un problema y propone cómo solucionarlo, con argumentos."},
+{q:"¿Cuál es el orden de la estructura de un texto propositivo?",o:["Problema, propuesta, argumentos y conclusión","Conclusión, problema, propuesta y saludo","Inicio, nudo y desenlace","Nacimiento, estudios y logros"],h:"Primero hay que saber qué pasa.",e:"Problema → propuesta → argumentos → conclusión."},
+{q:"«Propongo instalar canecas de reciclaje en cada pasillo.» Esta oración corresponde a:",o:["La propuesta","El problema","La conclusión","Una acotación"],h:"Mira el verbo «propongo».",e:"Es la solución que se plantea: la propuesta."},
+{q:"¿Qué hace más fuerte una propuesta?",o:["Los argumentos que explican por qué funcionaría","Escribirla en mayúsculas","Repetirla muchas veces sin explicar","Que sea muy corta"],h:"¿Qué convence a quien lee?",e:"Los argumentos justifican la propuesta y convencen al lector."},
+{q:"¿Cuál de estas oraciones es un argumento?",o:["Porque los estudiantes cuidan más lo que sienten como suyo","Hay mucha basura en el patio","En conclusión, cuidemos el colegio","Propongo poner canecas"],h:"Un argumento explica el porqué.",e:"Empieza con «porque» y justifica la propuesta."},
+{q:"«En los descansos el colegio queda lleno de basura.» Esta oración es:",o:["El problema","La propuesta","El argumento","La conclusión"],h:"Describe lo que está mal.",e:"Presenta la situación que hay que resolver: el problema."},
+{q:"¿Qué conector es útil para introducir la conclusión de un texto propositivo?",o:["En conclusión","Porque","Primero","Pero"],h:"Va al final del texto.",e:"«En conclusión» cierra el texto."}],
+open:[
+{q:"Identifica un problema de tu barrio o de Neiva y escribe una propuesta para solucionarlo.",a:"Ejemplo: Problema: hay basura en la orilla del río Las Ceibas. Propuesta: organizar jornadas de limpieza cada mes con la junta de acción comunal y poner avisos de prohibido botar basura."},
+{q:"Escribe dos argumentos que apoyen tu propuesta anterior.",a:"Ejemplo: 1) Porque un río limpio evita malos olores y enfermedades. 2) Ya que cuando la comunidad participa, aprende a cuidar lo que limpió."},
+{q:"¿Por qué una propuesta sin argumentos no convence?",a:"Porque el lector no sabe por qué la solución funcionaría; sin razones, es solo una opinión."}]},
+{id:"niveles",ref:`<div class="story"><b>La figura perdida</b><br>Esa noche en San Agustín llovía sin parar. Don Aurelio, el celador del museo, cerró la reja a las nueve, como siempre. A las once escuchó pasos en la sala de las estatuas. Tomó la linterna y bajó despacio, con el corazón golpeándole el pecho. En el piso encontró huellas de barro que iban hacia la ventana rota. Faltaba una pequeña figura de piedra.<br>Al día siguiente, la inspectora Rocío revisó las huellas: eran de botas de caucho, talla 38, con restos de pasto recién cortado.<br>—El ladrón no vino de lejos —dijo, mirando al jardinero, que esa mañana había llegado en zapatos y no en sus botas de siempre.</div>`,name:"Niveles de lectura",desc:"Literal, inferencial y crítico, aplicados a un cuento policíaco corto.",
+exp:`<h3>Los tres niveles</h3>
+<div class="xcards">
+<div class="xc"><b>Literal</b><span>Lo que el texto <u>dice directamente</u>: personajes, lugares, hechos, fechas.</span><i>Pregunta típica: ¿Quién…? ¿Dónde…? ¿A qué hora…?</i></div>
+<div class="xc"><b>Inferencial</b><span>Lo que <u>no se dice</u> pero se puede deducir con pistas del texto.</span><i>¿Por qué crees que…? ¿Qué se puede concluir…?</i></div>
+<div class="xc"><b>Crítico</b><span>Tu <u>opinión o juicio</u> sobre el texto, con argumentos.</span><i>¿Estás de acuerdo…? ¿Qué opinas de…?</i></div></div>
+<h3>Lee este cuento (lo usarás en el cuestionario)</h3>
+<div class="story"><b>La figura perdida</b><br>Esa noche en San Agustín llovía sin parar. Don Aurelio, el celador del museo, cerró la reja a las nueve, como siempre. A las once escuchó pasos en la sala de las estatuas. Tomó la linterna y bajó despacio, con el corazón golpeándole el pecho. En el piso encontró huellas de barro que iban hacia la ventana rota. Faltaba una pequeña figura de piedra.<br>Al día siguiente, la inspectora Rocío revisó las huellas: eran de botas de caucho, talla 38, con restos de pasto recién cortado.<br>—El ladrón no vino de lejos —dijo, mirando al jardinero, que esa mañana había llegado en zapatos y no en sus botas de siempre.</div>
+<p class="small">Cuento escrito para este repaso. Es del género policíaco: hay un misterio, pistas y alguien que investiga.</p>
+<div class="tip"><b>En las pruebas tipo Saber:</b> vuelve al texto para buscar la pista que justifica tu respuesta. La profe pide <b>justificar</b>.</div>`,
+qs:[
+{q:"(Literal) ¿A qué hora cerró la reja don Aurelio?",o:["A las nueve","A las once","A medianoche","En la mañana"],h:"Búscalo en la segunda oración del cuento.",e:"El texto dice: «cerró la reja a las nueve, como siempre»."},
+{q:"(Literal) ¿Qué objeto desapareció del museo?",o:["Una pequeña figura de piedra","Una linterna","Unas botas de caucho","La reja"],h:"Lee el final del primer párrafo.",e:"«Faltaba una pequeña figura de piedra»."},
+{q:"(Inferencial) ¿Cómo se sentía don Aurelio al bajar a la sala?",o:["Asustado","Feliz","Aburrido","Enojado"],h:"«Con el corazón golpeándole el pecho».",e:"El texto no dice «asustado», pero se deduce por la descripción de su corazón."},
+{q:"(Inferencial) ¿De quién sospecha la inspectora Rocío?",o:["Del jardinero","De don Aurelio","De un turista","De nadie"],h:"¿A quién mira cuando habla?",e:"Mira al jardinero al decir que el ladrón no vino de lejos."},
+{q:"(Inferencial) ¿Por qué es sospechoso que el jardinero llegara en zapatos?",o:["Porque pudo esconder las botas que dejaron las huellas","Porque los zapatos estaban sucios","Porque llegó tarde","Porque no le gusta el pasto"],h:"Relaciona las huellas con las botas.",e:"Las huellas eran de botas con pasto cortado; si no trajo sus botas, quizá las escondió."},
+{q:"(Inferencial) El cuento pertenece al género policíaco porque:",o:["Hay un misterio, pistas y alguien que investiga","Tiene un final feliz con humor","Cuenta la vida de un personaje real","Busca vender un producto"],h:"¿Qué hace la inspectora?",e:"El policíaco gira alrededor de un crimen o misterio que se investiga con pistas."},
+{q:"(Crítico) ¿Cuál opinión está mejor argumentada?",o:["Las pistas apuntan al jardinero, pero no bastan para acusarlo: falta encontrar las botas o la figura","El jardinero es culpable porque me cae mal","La inspectora se equivocó porque sí","Don Aurelio es el ladrón porque es el celador"],h:"Una buena opinión se apoya en el texto.",e:"Es la única que usa información del texto y razona sobre ella."}],
+open:[
+{q:"(Literal) ¿Cómo eran las huellas que encontró la inspectora? Escribe los tres detalles.",a:"Eran de botas de caucho, talla 38, y tenían restos de pasto recién cortado."},
+{q:"(Inferencial) ¿Qué quiso decir la inspectora con «El ladrón no vino de lejos»?",a:"Que el ladrón era alguien que trabajaba o estaba cerca del museo, porque el pasto recién cortado indica el jardín del propio museo."},
+{q:"(Crítico) ¿Estás de acuerdo con que la inspectora sospeche del jardinero? Justifica tu respuesta con pistas del texto.",a:"Respuesta personal argumentada. Ejemplo: Sí, porque las huellas tenían pasto cortado y él no llevó sus botas; pero antes de acusarlo hay que buscar más pruebas."}]}
+]},
+{id:"soc",name:"Sociales",c:"--soc",pending:true},
+{id:"ing",name:"Inglés",c:"--eng",pending:true}
+];
+
+const EXTRA={
+intra:{drop:[6,7,11,13],
+exp:`<h3>¿Qué es?</h3><p><b>Intra = dentro.</b> Son las relaciones entre individuos de la <b>misma especie</b>: chigüiro con chigüiro, garza con garza. A veces se ayudan y a veces compiten.</p>
+<h3>Los 4 tipos que vimos</h3><div class="xcards">
+<div class="xc"><b>Familiar</b><span>Se agrupan para <u>reproducirse y cuidar a sus crías</u>.</span><i>Ej.: una pareja de guacamayas con sus polluelos en el nido.</i></div>
+<div class="xc"><b>Gregaria</b><span>Se reúnen <u>temporalmente</u> para desplazarse, alimentarse o protegerse, y luego se separan.</span><i>Ej.: los bocachicos en la subienda del río Magdalena, una bandada de garzas, una manada de chigüiros.</i></div>
+<div class="xc"><b>Colonial</b><span>Permanecen <u>unidos físicamente</u> y forman una estructura organizada.</span><i>Ej.: los corales.</i></div>
+<div class="xc"><b>Competencia</b><span>Individuos de la misma especie se disputan un <u>recurso limitado</u>: alimento, territorio o pareja.</span><i>Ej.: dos gallos de una finca peleando por el territorio.</i></div></div>
+<div class="tip"><b>Truco para no confundirte:</b> gregaria = se juntan <u>un rato</u>; colonial = quedan <u>pegados</u>.</div>`,
+open:[
+{q:"Explica con tus palabras la diferencia entre una agrupación gregaria y una colonial. Da un ejemplo de cada una.",a:"En la gregaria los individuos se reúnen solo por un tiempo para desplazarse, alimentarse o protegerse, y luego se separan (ej.: garzas, bocachicos en la subienda). En la colonial permanecen unidos físicamente formando una estructura organizada (ej.: corales)."},
+{q:"¿Qué es la competencia intraespecífica? Nombra los tres recursos por los que compiten.",a:"Es cuando individuos de la misma especie se disputan un recurso limitado. Compiten por alimento, territorio y pareja."},
+{q:"Escribe un ejemplo de relación familiar (de tu casa, una finca o un documental) y explica por qué es familiar.",a:"Respuesta modelo: una gallina con sus pollitos en la finca. Es familiar porque se agrupan para reproducirse y cuidar de las crías. Cualquier ejemplo vale si muestra padres cuidando crías de su misma especie."},
+{q:"¿Por qué los bocachicos viajan en grandes grupos durante la subienda? ¿Qué tipo de agrupación es?",a:"Porque en grupo se protegen mejor de los depredadores y se desplazan juntos río arriba para reproducirse. Es una agrupación gregaria porque la unión es temporal."}]},
+inter:{drop:[7,8,9,13],
+exp:`<h3>¿Qué es?</h3><p><b>Inter = entre.</b> Son las relaciones entre organismos de <b>especies diferentes</b>: la vaca y la garrapata, la abeja y la flor del café.</p>
+<h3>Tabla para memorizar</h3><p class="small">(+) gana · (–) pierde · (0) no le pasa nada</p>
+<div class="xt"><table><thead><tr><th>Relación</th><th>Signos</th><th>Qué pasa</th><th>Ejemplo</th></tr></thead><tbody>
+<tr><td><b>Mutualismo</b></td><td>+ / +</td><td>Las dos especies ganan.</td><td>Abeja y flor del cafeto</td></tr>
+<tr><td><b>Comensalismo</b></td><td>+ / 0</td><td>Una gana y a la otra no la afecta.</td><td>Garcita bueyera y vaca</td></tr>
+<tr><td><b>Parasitismo</b></td><td>+ / –</td><td>El parásito vive a costa del <u>hospedero</u> y lo perjudica, sin matarlo de inmediato.</td><td>Garrapata en la vaca</td></tr>
+<tr><td><b>Depredación</b></td><td>+ / –</td><td>El depredador captura y se come a la <u>presa</u>.</td><td>Jaguar y chigüiro</td></tr>
+<tr><td><b>Competencia</b></td><td>– / –</td><td>Especies distintas se disputan el mismo recurso.</td><td>Gavilán y lechuza por los ratones</td></tr>
+</tbody></table></div>
+<h3>Simbiosis</h3><p>Es una asociación <b>estrecha y permanente</b> entre organismos de diferente especie en la que existe <b>dependencia</b>. Ej.: los líquenes que se ven en los troncos y piedras son un hongo y un alga viviendo juntos.</p>
+<div class="tip"><b>Ojo con el examen:</b> parásito y depredador los dos ganan a costa del otro, pero el depredador <u>se come</u> a la presa y el parásito <u>vive</u> de su hospedero.</div>`,
+open:[
+{q:"Explica la diferencia entre mutualismo y comensalismo con un ejemplo de cada uno.",a:"En el mutualismo las dos especies se benefician (abeja y flor: néctar y polinización). En el comensalismo una se beneficia y la otra no se afecta (garcita bueyera y vaca)."},
+{q:"¿Por qué la relación entre la garrapata y la vaca es parasitismo y no depredación?",a:"Porque la garrapata vive sobre la vaca y se alimenta de su sangre perjudicándola, pero no la caza ni se la come. En la depredación el depredador captura y consume a la presa."},
+{q:"¿Qué es la simbiosis? Da un ejemplo.",a:"Es una asociación estrecha y permanente entre organismos de diferente especie en la que existe dependencia. Ejemplo: los líquenes (un hongo y un alga)."},
+{q:"Escribe la diferencia entre relación intraespecífica e interespecífica.",a:"La intraespecífica ocurre entre individuos de la misma especie (intra = dentro). La interespecífica ocurre entre organismos de especies diferentes (inter = entre)."}]},
+trofica:{drop:[6,9,10,14],
+exp:`<h3>Cadena alimenticia</h3><p>Muestra <b>quién se come a quién</b> y cómo pasa la energía. Las flechas van del que es comido hacia el que come.</p>
+<div class="chain"><span class="ln sun">Sol</span><span class="ar">→</span><span class="ln">Pasto<small>Productor</small></span><span class="ar">→</span><span class="ln">Saltamontes<small>Consumidor 1.°</small></span><span class="ar">→</span><span class="ln">Rana<small>Consumidor 2.°</small></span><span class="ar">→</span><span class="ln">Serpiente<small>Consumidor 3.°</small></span><span class="ar">→</span><span class="ln">Águila<small>Consumidor 4.°</small></span></div>
+<div class="xcards">
+<div class="xc"><b>Productores</b><span>Fabrican su alimento con la luz del sol (fotosíntesis).</span><i>Plantas, pasto, maíz, algas.</i></div>
+<div class="xc"><b>Consumidores</b><span>Se alimentan de otros. Primarios = herbívoros; secundarios y terciarios = carnívoros.</span><i>Vaca, rana, serpiente, jaguar.</i></div>
+<div class="xc"><b>Descomponedores</b><span>Bacterias y hongos que transforman los restos en materia que luego usan los productores.</span><i>El hongo que pudre una fruta caída.</i></div></div>
+<h3>Pirámide trófica</h3><p>Son los mismos niveles, pero en forma de pirámide. Abajo van los productores. <b>Al subir, la energía disminuye</b>: solo pasa cerca del 10 % al siguiente nivel. Por eso hay muchos chigüiros y pocos jaguares.</p>
+<div class="pyr"><div style="width:34%">Consumidor 3.° · 10 kcal</div><div style="width:54%">Consumidor 2.° · 100 kcal</div><div style="width:76%">Consumidor 1.° · 1.000 kcal</div><div style="width:100%">Productores · 10.000 kcal</div></div><p class="small">Ejemplo de cómo baja la energía: de cada 10.000 kcal que tienen las plantas, solo unas 1.000 llegan a los herbívoros.</p>
+<div class="tip"><b>Para el examen:</b> si quitas un eslabón, toda la cadena cambia. Sin ranas, aumentan los saltamontes.</div>`,
+open:[
+{q:"Arma una cadena alimenticia de 4 eslabones con seres vivos del Huila y escribe el nivel de cada uno.",a:"Respuesta modelo: maíz (productor) → ratón (consumidor primario) → serpiente (consumidor secundario) → gavilán (consumidor terciario). Vale cualquier cadena que empiece por un productor y donde cada uno se coma al anterior."},
+{q:"¿Qué pasaría en un ecosistema si desaparecieran los descomponedores?",a:"Se acumularían los restos de plantas y animales muertos, y el suelo no recuperaría los nutrientes. Las plantas crecerían menos y toda la cadena se afectaría."},
+{q:"¿Por qué la energía disminuye al subir en la pirámide trófica?",a:"Porque cada ser vivo gasta gran parte de la energía en vivir (moverse, respirar, crecer) y solo una pequeña parte (cerca del 10 %) pasa al siguiente nivel."},
+{q:"¿Por qué las plantas están en la base de la pirámide trófica?",a:"Porque son productoras: fabrican su alimento con la energía del sol y de ellas depende la energía de todos los demás niveles. Son las que tienen más energía."}]}
+};
+SUBJECTS[0].topics.forEach(t=>{const x=EXTRA[t.id];t.exp=x.exp;t.qs=t.qs.filter((_,i)=>!x.drop.includes(i));t.open=x.open.map(o=>({...o,type:'open'}));t.total=t.qs.length+t.open.length;});
+
+SUBJECTS.forEach(su=>su.topics&&su.topics.forEach(t=>{if(t.total==null){t.open=(t.open||[]).map(o=>({...o,type:'open'}));t.total=t.qs.length+t.open.length}}));
+const DEEP={
+intra:{ideas:["«Intra» = dentro: son relaciones entre individuos de la MISMA especie.","Unas son de cooperación (familiar, gregaria, colonial) y otra es de lucha (competencia).","La diferencia entre gregaria y colonial está en el tiempo: gregaria es un rato, colonial es pegados para siempre."],
+ej:[{p:"Las vacas de una finca en Campoalegre pastan juntas y, si un perro se acerca, se agrupan para protegerse. Al rato se dispersan otra vez.",r:"1) ¿Misma especie? Sí, todas son vacas → intraespecífica. 2) ¿Se unen para siempre? No, se juntan un rato → gregaria. Respuesta: asociación gregaria."},
+{p:"Dos colibríes pelean por la misma flor de un jardín en Neiva.",r:"1) Misma especie → intraespecífica. 2) Luchan por un recurso limitado (el néctar de la flor) → competencia. Respuesta: competencia intraespecífica."},
+{p:"Una gata cuida, alimenta y limpia a sus gatitos recién nacidos.",r:"1) Misma especie. 2) El fin es criar a las crías → relación familiar."}],
+err:["Confundir intra con inter. Recuerda: intra = dentro (misma especie), inter = entre (especies distintas).","Decir que las abejas de un panal y las flores tienen una relación intraespecífica. ¡No! Abeja y flor son especies distintas: es interespecífica.","Pensar que la competencia solo es por comida. También se compite por territorio y por pareja."],
+retos:[{q:"Un grupo de golondrinas viaja junto durante la migración y luego se separa. ¿Qué tipo de relación es?",a:"Gregaria, porque se reúnen temporalmente para desplazarse."},{q:"¿La competencia es una relación de ayuda o de lucha?",a:"De lucha: los individuos se disputan un recurso limitado."},{q:"¿Qué tienen en común todas las relaciones intraespecíficas?",a:"Que ocurren entre individuos de la misma especie."}],
+dato:"En la subienda, entre enero y marzo, miles de bocachicos suben juntos por el río Magdalena. Es uno de los ejemplos más grandes de agrupación gregaria en Colombia."},
+inter:{ideas:["«Inter» = entre: son relaciones entre especies DIFERENTES.","Para clasificarlas, mira quién gana (+), quién pierde (–) y a quién no le pasa nada (0).","Parasitismo y depredación se parecen (uno gana, otro pierde), pero el depredador se come a su presa y el parásito vive de su hospedero."],
+ej:[{p:"Un pájaro carpintero hace su nido en un árbol viejo sin hacerle daño.",r:"1) Especies distintas → interespecífica. 2) Pájaro: gana (+) un hogar. Árbol: no le pasa nada (0). 3) (+, 0) = comensalismo."},
+{p:"Los peces payaso viven entre los tentáculos de la anémona: ella los protege y ellos la limpian y le espantan enemigos.",r:"1) Especies distintas. 2) Pez gana (+) y anémona gana (+). 3) (+, +) = mutualismo."},
+{p:"Un zancudo pica a una persona para alimentarse de su sangre.",r:"1) Especies distintas. 2) Zancudo gana (+), persona pierde (–) y no muere. 3) Vive a costa de ella: parasitismo (la persona es el hospedero)."}],
+err:["Decir que la garcita bueyera y la vaca son mutualismo. La vaca no gana nada: es comensalismo (+, 0).","Llamar «presa» al animal que tiene parásitos. El que tiene parásitos es el «hospedero»; la presa es la que se come el depredador.","Olvidar que la competencia también puede ser interespecífica, como el gavilán y la lechuza que cazan los mismos ratones."],
+retos:[{q:"¿Qué signos tiene el mutualismo?",a:"(+, +): las dos especies ganan."},{q:"Un tigrillo caza una ardilla. ¿Qué relación es?",a:"Depredación: el tigrillo es el depredador y la ardilla la presa."},{q:"¿Qué es la simbiosis?",a:"Una asociación estrecha y permanente entre especies diferentes con dependencia, como los líquenes (hongo + alga)."}],
+dato:"Los líquenes que ves en troncos y piedras son muy sensibles a la contaminación. Si hay muchos líquenes en un lugar, es señal de que el aire es limpio."},
+trofica:{ideas:["Toda la energía empieza en el sol y entra a la cadena por los productores (las plantas).","Cada ser vivo pasa al siguiente solo una pequeña parte de su energía (cerca del 10 %).","Por eso la pirámide es ancha abajo y angosta arriba: hay muchas plantas, menos herbívoros y pocos carnívoros."],
+ej:[{p:"Ordena y clasifica: serpiente, maíz, gavilán, ratón.",r:"1) Busca el productor: el maíz. 2) ¿Quién come maíz? El ratón (consumidor primario). 3) ¿Quién come ratones? La serpiente (consumidor secundario). 4) ¿Quién come serpientes? El gavilán (consumidor terciario). Cadena: maíz → ratón → serpiente → gavilán."},
+{p:"Si las plantas de un potrero tienen 10.000 unidades de energía, ¿cuánta le llega más o menos a la vaca que se las come?",r:"Solo pasa cerca del 10 %. 10 % de 10.000 = 1.000 unidades. El resto la planta lo usó para vivir."},
+{p:"En un río se pescan casi todas las garzas. ¿Qué pasa con los peces pequeños que ellas comían?",r:"Al faltar su depredador, los peces pequeños aumentan. Luego podrían acabarse las algas que ellos comen. Un cambio afecta a toda la cadena."}],
+err:["Poner las flechas al revés. La flecha va del que es comido al que come: pasto → vaca (la energía va hacia la vaca).","Olvidar a los descomponedores. Aunque no siempre se dibujan, reciclan los restos de todos los niveles.","Creer que la energía aumenta al subir. Es al contrario: disminuye en cada nivel."],
+retos:[{q:"¿En qué nivel de la pirámide va la vaca?",a:"Consumidor primario (herbívoro), justo encima de los productores."},{q:"¿Por qué hay pocos jaguares y muchos chigüiros?",a:"Porque la energía disminuye al subir de nivel y no alcanza para muchos depredadores grandes."},{q:"¿Qué hacen los hongos que pudren una fruta caída?",a:"Son descomponedores: transforman los restos en nutrientes para el suelo."}],
+dato:"Un jaguar necesita un territorio muy grande, de decenas de kilómetros cuadrados, para encontrar suficientes presas. Es la pirámide trófica en acción."},
+lenguaje:{ideas:["En álgebra una letra (x, a, n) representa un número que no conocemos.","Cada palabra tiene su traducción: doble = 2x, mitad = x/2, aumentado = +, disminuido = −.","Se lee en orden: primero lo que le pasa al número y luego lo que se suma o se resta."],
+ej:[{p:"Traduce: «el doble de un número aumentado en 3».",r:"1) Un número = x. 2) El doble = 2x. 3) Aumentado en 3 = + 3. Respuesta: 2x + 3."},
+{p:"Traduce: «la mitad de un número disminuida en 1».",r:"1) Un número = x. 2) La mitad = x/2. 3) Disminuida en 1 = − 1. Respuesta: x/2 − 1."},
+{p:"Juan tiene x mil pesos. Compra una empanada de 2 mil y recibe 5 mil de su abuela. ¿Cuánto tiene?",r:"1) Empieza con x. 2) Gasta 2 → x − 2. 3) Recibe 5 → x − 2 + 5. Respuesta: x + 3 (mil pesos)."}],
+err:["Escribir x² cuando dice «el doble». El doble es 2x; el cuadrado es x².","Escribir 4 − x cuando dice «un número disminuido en 4». Lo correcto es x − 4: al número le quitas 4.","Usar la misma letra para dos números distintos. «La suma de dos números» es a + b, no x + x."],
+retos:[{q:"Traduce: «el triple de un número».",a:"3x"},{q:"Traduce: «un número aumentado en 10».",a:"x + 10"},{q:"¿Qué dice x² + 1 en palabras?",a:"El cuadrado de un número aumentado en uno."}],
+dato:"La palabra «álgebra» viene del árabe «al-jabr», del título de un libro escrito hace más de 1.000 años por el matemático Al-Juarismi."},
+termino:{ideas:["Un término es una sola pieza: números y letras multiplicándose, sin + ni − en medio.","Tiene cuatro partes: signo, coeficiente, parte literal y exponente.","El grado se saca sumando los exponentes de las letras (¡no el coeficiente!)."],
+ej:[{p:"Analiza el término −4x²y.",r:"Signo: negativo. Coeficiente: 4. Parte literal: x²y. Exponentes: x tiene 2, y tiene 1. Grado: 2 + 1 = 3."},
+{p:"Analiza el término m.",r:"Signo: positivo (no se ve, pero es +). Coeficiente: 1 (m = 1m). Parte literal: m. Exponente: 1. Grado: 1."},
+{p:"¿Cuál tiene mayor grado: 9a² o 2a²b²?",r:"9a²: grado 2. 2a²b²: 2 + 2 = 4. Tiene mayor grado 2a²b², aunque su coeficiente sea más pequeño."}],
+err:["Sumar el coeficiente al calcular el grado. En 5x³ el grado es 3, no 8.","Decir que x no tiene coeficiente. Sí tiene: es 1.","Olvidar el exponente 1 de las letras que no muestran número: en 3ab el grado es 1 + 1 = 2."],
+retos:[{q:"¿Cuál es el coeficiente de −8y³?",a:"8 (y el signo es negativo)."},{q:"¿Cuál es el grado de 7abc?",a:"3, porque cada letra tiene exponente 1: 1 + 1 + 1."},{q:"¿Cuál es la parte literal de 6m²n?",a:"m²n"}],
+dato:"El matemático francés René Descartes popularizó usar las últimas letras del abecedario (x, y, z) para los valores desconocidos. Por eso hoy casi siempre usamos x."},
+expresiones:{ideas:["Una expresión algebraica junta términos con signos + y −.","Se clasifica contando términos: 1 monomio, 2 binomio, 3 trinomio, 4 o más polinomio.","El grado de la expresión es el grado más alto de sus términos."],
+ej:[{p:"Clasifica 5x² − 3x.",r:"1) Separa por + y −: 5x² | −3x. 2) Son 2 términos → binomio. 3) Grados: 2 y 1 → grado de la expresión: 2."},
+{p:"Clasifica 4abc.",r:"No hay + ni −: es un solo término → monomio. Grado: 1 + 1 + 1 = 3."},
+{p:"Clasifica a³ + 2a² − a + 7.",r:"Términos: a³ | 2a² | −a | 7 → 4 términos → polinomio. Grados: 3, 2, 1, 0 → grado 3."}],
+err:["Contar las letras en vez de los términos. 2ab tiene dos letras, pero es un solo término (monomio).","Olvidar el número suelto. En x² + x + 5, el 5 también es un término: es trinomio.","Creer que el grado de la expresión es la suma de todos los grados. Es solo el mayor."],
+retos:[{q:"¿Qué es 3m − 2?",a:"Un binomio (2 términos)."},{q:"¿Cuántos términos tiene x²y − xy + y − 1?",a:"4: es un polinomio."},{q:"¿Cuál es el grado de 2x + x⁴?",a:"4, el mayor de sus términos."}],
+dato:"«Mono», «bi», «tri» y «poli» vienen del griego y significan uno, dos, tres y muchos. Los mismos prefijos están en monociclo, bicicleta, triciclo y polideportivo."},
+valor:{ideas:["Valor numérico = cambiar cada letra por su número y resolver.","Pon el número entre paréntesis al reemplazar, sobre todo si es negativo.","Respeta el orden: primero potencias, luego multiplicaciones y divisiones, al final sumas y restas."],
+ej:[{p:"Halla el valor de 5x − 2 si x = 3.",r:"1) Reemplazo: 5(3) − 2. 2) Multiplico: 15 − 2. 3) Resto: 13."},
+{p:"Halla el valor de x² + 3x si x = 2.",r:"1) Reemplazo: (2)² + 3(2). 2) Potencia: 4 + 3(2). 3) Multiplico: 4 + 6. 4) Sumo: 10."},
+{p:"Halla el valor de 2a + b si a = −1 y b = 5.",r:"1) Reemplazo: 2(−1) + 5. 2) Multiplico: −2 + 5. 3) Sumo: 3."}],
+err:["Escribir 3x con x = 4 como «34». 3x significa 3 por x: 3 × 4 = 12.","Multiplicar antes de la potencia: en 2x² con x = 3 no es (2·3)² = 36, sino 2·9 = 18.","Perder el signo negativo. Si x = −2, entonces x² = (−2)² = 4 (positivo)."],
+retos:[{q:"Valor de 4y si y = 5.",a:"20"},{q:"Valor de a² − 1 si a = 3.",a:"9 − 1 = 8"},{q:"Valor de x + y si x = 6 y y = −4.",a:"6 + (−4) = 2"}],
+dato:"Cada vez que usas una fórmula, como el área de un cuadrado A = L², estás calculando un valor numérico."},
+experimentos:{ideas:["Determinista: sabes el resultado antes de hacerlo.","Aleatorio: conoces lo que puede salir, pero no sabes qué va a salir.","Pregunta clave: «¿Puedo estar segura del resultado?» Sí → determinista. No → aleatorio."],
+ej:[{p:"¿Echar sal en el agua del sancocho la vuelve salada?",r:"Siempre pasa lo mismo y lo sabemos antes → determinista."},
+{p:"¿Sacar una ficha de parqués de una bolsa sin mirar?",r:"Sabemos qué colores hay, pero no cuál saldrá → aleatorio."},
+{p:"¿Que el profe escoja al azar quién pasa al tablero?",r:"Puede salir cualquier estudiante y no se sabe quién → aleatorio."}],
+err:["Pensar que algo es determinista porque conocemos los posibles resultados. Saber que el dado da de 1 a 6 no dice cuál número saldrá: es aleatorio.","Confundir «aleatorio» con «imposible». Aleatorio significa que depende del azar.","Creer que si algo es muy probable, es determinista. Que hoy llueva puede ser muy probable, pero no es seguro."],
+retos:[{q:"¿Lanzar un dado de parqués es aleatorio o determinista?",a:"Aleatorio."},{q:"¿Encender un bombillo bueno al subir el interruptor?",a:"Determinista: siempre se prende."},{q:"¿Qué tienen todos los experimentos aleatorios?",a:"Se conocen los resultados posibles, pero no se puede predecir cuál saldrá."}],
+dato:"La probabilidad nació en el siglo XVII con juegos de dados: los matemáticos Pascal y Fermat se escribían cartas para resolver problemas de apuestas."},
+espacio:{ideas:["El espacio muestral es la lista de TODO lo que puede salir.","Se escribe con S y entre llaves: S = {…}.","Cuando hay dos o más pasos, el orden importa: CS y SC son resultados diferentes."],
+ej:[{p:"Escribe el espacio muestral de girar una ruleta con 3 colores: rojo, azul y amarillo.",r:"S = {rojo, azul, amarillo}. Tiene 3 elementos."},
+{p:"Escribe el espacio muestral de lanzar dos monedas.",r:"Primera moneda C o S, segunda C o S: S = {CC, CS, SC, SS}. Son 4."},
+{p:"En un sorteo del curso hay 3 nombres: Ana, Beto y Caro. ¿Cuál es el espacio muestral al sacar uno?",r:"S = {Ana, Beto, Caro}. 3 elementos."}],
+err:["Olvidar resultados, por ejemplo escribir {CC, CS, SS} y dejar por fuera SC.","Escribir el espacio muestral sin llaves o con paréntesis.","Incluir resultados imposibles, como el 7 en un dado normal."],
+retos:[{q:"¿Cuál es el espacio muestral de lanzar una moneda?",a:"S = {cara, sello}"},{q:"¿Cuántos elementos tiene el espacio muestral de lanzar un dado?",a:"6"},{q:"Al lanzar dos monedas, ¿CS y SC son lo mismo?",a:"No: en CS la primera sale cara; en SC la primera sale sello."}],
+dato:"Una baraja de póker tiene 52 cartas, así que el espacio muestral de sacar una carta tiene 52 elementos."},
+arbol:{ideas:["El diagrama de árbol dibuja cada elección como un nivel de ramas.","Cada camino completo, de inicio a fin, es un resultado posible.","Para saber cuántos resultados hay, cuenta los finales de las ramas."],
+ej:[{p:"Para el desayuno hay arepa o pan, y chocolate o café. ¿Cuántos desayunos hay?",r:"arepa → chocolate / café; pan → chocolate / café. Caminos: arepa-chocolate, arepa-café, pan-chocolate, pan-café. Son 4."},
+{p:"Lanzas una moneda dos veces.",r:"C → C / S; S → C / S. Caminos: CC, CS, SC, SS. Son 4."},
+{p:"Escoges un deporte (fútbol, voleibol) y un horario (mañana, tarde, noche).",r:"De cada deporte salen 3 ramas: 2 × 3 = 6 caminos. Ej.: fútbol-mañana, fútbol-tarde, fútbol-noche, voleibol-mañana, voleibol-tarde, voleibol-noche."}],
+err:["Contar las ramas del primer nivel en vez de los finales.","No repetir las opciones en cada rama: de cada camiseta deben salir TODOS los pantalones.","Mezclar los niveles: primero va una elección completa y después la otra."],
+retos:[{q:"Hay 3 sabores de jugo y 2 tamaños. ¿Cuántos caminos tiene el árbol?",a:"6"},{q:"¿Qué representa cada camino del árbol?",a:"Un resultado posible."},{q:"Si lanzas una moneda tres veces, ¿cuántos finales tiene el árbol?",a:"8"}],
+dato:"El árbol genealógico de tu familia usa la misma idea: cada rama muestra un camino desde los abuelos hasta los nietos."},
+multiplicacion:{ideas:["Si una elección tiene m opciones y otra tiene n, juntas tienen m × n.","Funciona con tres o más elecciones: se multiplican todas.","Es la forma rápida de contar sin dibujar el árbol."],
+ej:[{p:"Para la fiesta hay 4 vestidos y 3 pares de zapatos.",r:"Elección 1: 4. Elección 2: 3. Total: 4 × 3 = 12 formas."},
+{p:"Un almuerzo en Neiva: 3 sopas, 2 platos fuertes y 4 jugos.",r:"3 × 2 × 4 = 24 almuerzos diferentes."},
+{p:"Una clave de 2 dígitos (0 a 9).",r:"Primer dígito: 10. Segundo: 10. Total: 10 × 10 = 100 claves (de 00 a 99)."}],
+err:["Sumar en lugar de multiplicar: 4 vestidos y 3 zapatos no dan 7, dan 12.","Olvidar una de las elecciones al multiplicar.","Olvidar que el 0 también es un dígito: del 0 al 9 hay 10 opciones, no 9."],
+retos:[{q:"2 gorras y 5 camisetas: ¿cuántas combinaciones?",a:"10"},{q:"Lanzar un dado y una moneda: ¿cuántos resultados?",a:"12"},{q:"¿Cuántas claves de 3 dígitos hay?",a:"1.000"}],
+dato:"Si las placas tuvieran 3 letras (de 26) y 3 números, habría 26 × 26 × 26 × 10 × 10 × 10 = 17.576.000 placas posibles."},
+dramatico:{ideas:["Las obras dramáticas se escriben para ser actuadas, no solo leídas.","No hay narrador: la historia avanza con el diálogo y las acotaciones.","Hay tres subgéneros principales: tragedia, comedia y drama."],
+ej:[{p:"Identifica las partes: «CARLOS: (Gritando desde la puerta.) ¡Ya llegó el bus!»",r:"CARLOS = personaje que habla. (Gritando desde la puerta.) = acotación. ¡Ya llegó el bus! = diálogo o parlamento."},
+{p:"Una obra donde un joven intenta impresionar a su vecina y todo le sale mal de forma chistosa, pero al final ella acepta salir con él.",r:"Humor + final feliz = comedia."},
+{p:"Un rey que por orgullo pierde su reino y a su familia.",r:"Conflicto grave + final triste = tragedia."}],
+err:["Leer las acotaciones en voz alta como si fueran diálogo. Son instrucciones para actuar.","Confundir acto con escena. El acto es una parte grande; la escena cambia cuando entra o sale un personaje.","Pensar que en el teatro hay narrador como en un cuento."],
+retos:[{q:"¿Dónde van normalmente las acotaciones?",a:"Entre paréntesis."},{q:"¿Qué subgénero tiene humor y final feliz?",a:"La comedia."},{q:"¿Cómo avanza la historia en el teatro?",a:"Con el diálogo y las acciones de los personajes."}],
+dato:"El teatro nació en la antigua Grecia hace unos 2.500 años. Las dos máscaras del teatro, una feliz y una triste, representan la comedia y la tragedia."},
+variantes:{ideas:["Todos hablamos español, pero lo usamos distinto según dónde, quién, en qué situación y cuándo.","Por eso hay cuatro variantes: geográfica, social, situacional e histórica.","Ninguna forma de hablar es mejor que otra; lo importante es adaptarse a la situación."],
+ej:[{p:"En una región dicen «guineo» y en otra «banano».",r:"Cambia según el lugar → variante geográfica (diatópica)."},
+{p:"Un médico dice «cefalea» y un niño dice «me duele la cabeza».",r:"Cambia según la profesión o el grupo → variante social (diastrática)."},
+{p:"En un discurso dices «Respetados profesores» y en el descanso «¡Ey, qué más!».",r:"Cambia según la situación → variante situacional (diafásica)."}],
+err:["Confundir la variante social con la situacional. Social depende de QUIÉN eres; situacional depende de DÓNDE o CON QUIÉN estás hablando en ese momento.","Pensar que hablar con acento es hablar mal.","Creer que el idioma no cambia con el tiempo. Cambia: eso es la variante histórica."],
+retos:[{q:"Las palabras de los jóvenes son variante…",a:"Social."},{q:"Hablar formal en una entrevista es variante…",a:"Situacional."},{q:"Las palabras que usaban los abuelos y ya no se usan muestran la variante…",a:"Histórica."}],
+dato:"En Colombia, además del español, se hablan más de 60 lenguas indígenas y también lenguas criollas como la de San Basilio de Palenque."},
+conectores:{ideas:["Los conectores son el pegante de las ideas.","Cada tipo dice algo: sumar (y, además), oponer (pero, sin embargo), causa (porque), consecuencia (por eso), orden (primero, luego) y cierre (en conclusión).","Si cambias el conector, cambia el sentido de la oración."],
+ej:[{p:"Une: «Tenía hambre» + «no había comida».",r:"Las ideas se oponen → contraste: Tenía hambre, pero no había comida."},
+{p:"Une: «Practiqué mucho» + «gané el campeonato».",r:"Lo segundo es resultado de lo primero → consecuencia: Practiqué mucho; por eso gané el campeonato."},
+{p:"Une: «Me puse la chaqueta» + «hacía frío».",r:"Lo segundo explica el porqué → causa: Me puse la chaqueta porque hacía frío."}],
+err:["Usar «porque» cuando va «por eso». «Porque» da la causa; «por eso» da la consecuencia.","Repetir siempre «y» o «entonces». Varía los conectores para que el texto suene mejor.","Usar «sin embargo» para sumar ideas. «Sin embargo» opone, igual que «pero»."],
+retos:[{q:"¿«Además» es de adición o de contraste?",a:"De adición."},{q:"¿Qué tipo de conector es «ya que»?",a:"De causa."},{q:"Completa: «Llovió mucho; ___ el río creció.»",a:"Por eso / por lo tanto (consecuencia)."}],
+dato:"Un texto sin conectores parece una lista de frases sueltas. Los buenos escritores los usan para que el lector no se pierda."},
+puntuacion:{ideas:["Los signos de puntuación son las señales de tránsito del texto: dicen dónde parar, pausar o preguntar.","La coma separa listas y el nombre de a quién le hablas; los dos puntos anuncian algo.","La tilde diacrítica distingue palabras iguales: tú/tu, él/el, sí/si, mí/mi, más/mas, té/te."],
+ej:[{p:"Corrige: «juan trajo pan queso y jugo»",r:"Mayúscula en el nombre y comas en la lista: Juan trajo pan, queso y jugo."},
+{p:"Corrige: «tu sabes donde esta mi cuaderno»",r:"Es pregunta y «tú» es persona: ¿Tú sabes dónde está mi cuaderno?"},
+{p:"¿«Si» o «sí»? «___ estudias, ___ vas a ganar.»",r:"Primero condición (si); después afirmación (sí): Si estudias, sí vas a ganar."}],
+err:["Olvidar el signo de apertura ¿ o ¡. En español se abren y se cierran.","Poner coma entre el sujeto y el verbo: «Mi hermano, juega fútbol» es incorrecto.","Tildar «mi» cuando es de quién es algo: «mí casa» es incorrecto; va «mi casa»."],
+retos:[{q:"¿Qué signo va antes de una lista que se anuncia?",a:"Dos puntos (:)."},{q:"¿«Él» o «el»? «___ perro de mi tía.»",a:"El (artículo, sin tilde)."},{q:"¿Para qué sirve el punto aparte?",a:"Para terminar un párrafo y empezar otro."}],
+dato:"El español es casi el único idioma que abre las preguntas y las exclamaciones con ¿ y ¡. Así sabes desde el inicio cómo leer la frase."},
+biografia:{ideas:["Biografía = otro cuenta tu vida (él, ella). Autobiografía = tú cuentas tu vida (yo).","Se cuenta en orden de tiempo: nacimiento, infancia, estudios, logros y presente o legado.","Debe tener datos reales y verificables."],
+ej:[{p:"¿Biografía o autobiografía? «Ella nació en Neiva y desde niña quiso ser veterinaria.»",r:"Usa tercera persona (ella) → biografía."},
+{p:"¿Biografía o autobiografía? «Mi primer recuerdo es la finca de mi abuelo en Rivera.»",r:"Usa primera persona (mi) → autobiografía."},
+{p:"Ordena: «publicó La vorágine» – «nació en 1888» – «estudió derecho» – «murió en 1928».",r:"Orden cronológico: nació en 1888 → estudió derecho → publicó La vorágine → murió en 1928."}],
+err:["Mezclar «yo» y «él» en el mismo texto.","Contar los hechos desordenados.","Inventar datos para que suene más bonito. La biografía debe ser verdadera."],
+retos:[{q:"¿En qué persona se escribe la biografía?",a:"En tercera persona (él, ella)."},{q:"¿Qué significa «auto» en autobiografía?",a:"Uno mismo."},{q:"¿Qué orden siguen los hechos?",a:"Cronológico: del más antiguo al más reciente."}],
+dato:"El municipio de Rivera, en el Huila, se llama así en honor a José Eustasio Rivera, el autor de La vorágine."},
+publicidad:{ideas:["Publicidad = quiere venderte algo. Propaganda = quiere convencerte de una idea.","Usan eslogan, imagen, logotipo y un público al que le hablan.","Para convencer usan emociones, personajes famosos, humor y promesas."],
+ej:[{p:"«¡Refresco Tatacoa: el que refresca a todo el Huila!»",r:"Ofrece un producto para vender → publicidad. El eslogan es «el que refresca a todo el Huila»."},
+{p:"«Apaga la luz que no usas. El planeta te lo agradece.»",r:"No vende nada, promueve una idea → propaganda."},
+{p:"Un anuncio de cereal muestra niños felices jugando y un futbolista famoso desayunando.",r:"Estrategias: emoción (alegría) y personaje famoso."}],
+err:["Pensar que todo anuncio es publicidad. Si no vende nada y promueve una idea, es propaganda.","Confundir el eslogan con el logotipo. El eslogan es la frase; el logotipo es el dibujo o símbolo.","Creer todo lo que dice un anuncio. Hay que leerlo con mirada crítica."],
+retos:[{q:"Una campaña para donar sangre es…",a:"Propaganda."},{q:"¿Cómo se llama la frase corta de un anuncio?",a:"Eslogan."},{q:"¿Qué busca la publicidad?",a:"Vender un producto o servicio."}],
+dato:"Muchos eslóganes se recuerdan durante años porque son cortos, riman o se repiten muchas veces."},
+propositivo:{ideas:["El texto propositivo responde a la pregunta «¿qué podemos hacer?».","Su estructura: problema → propuesta → argumentos → conclusión.","Los argumentos son las razones que demuestran que la propuesta sirve."],
+ej:[{p:"Problema: muchos estudiantes llegan tarde porque el bus pasa a la hora justa.",r:"Propuesta: pedir a la empresa que el bus pase 15 minutos antes. Argumento: así los estudiantes llegan a tiempo, ya que tendrán margen para los trancones. Conclusión: con un pequeño cambio de horario mejora la puntualidad de todos."},
+{p:"¿Esto es propuesta o argumento? «Porque así los niños tendrán un lugar seguro para jugar.»",r:"Empieza con «porque» y explica la razón → argumento."},
+{p:"¿Esto es problema o propuesta? «Sugiero crear un club de lectura en los descansos.»",r:"Dice qué hacer (sugiero) → propuesta."}],
+err:["Quedarse solo en la queja (el problema) sin proponer nada.","Proponer sin dar razones. Una propuesta sin argumentos no convence.","Olvidar la conclusión al final."],
+retos:[{q:"¿Qué va primero en un texto propositivo?",a:"El problema."},{q:"¿Qué conector sirve para dar un argumento?",a:"Porque, ya que, puesto que."},{q:"¿Para qué sirve la conclusión?",a:"Para cerrar y recordar la propuesta principal."}],
+dato:"Los proyectos que se presentan a las alcaldías o a los concejos municipales son textos propositivos: plantean un problema de la ciudad y proponen cómo resolverlo."},
+niveles:{ideas:["Literal: está escrito en el texto. Lo encuentras si buscas.","Inferencial: no está escrito, pero lo deduces con pistas.","Crítico: das tu opinión y la defiendes con razones del texto."],
+ej:[{p:"Texto: «Camila cerró el paraguas y se quitó las botas mojadas.» Pregunta literal: ¿Qué se quitó Camila?",r:"Las botas mojadas. Está escrito tal cual."},
+{p:"Mismo texto. Pregunta inferencial: ¿Cómo estaba el clima?",r:"Estaba lloviendo. No lo dice, pero el paraguas y las botas mojadas son las pistas."},
+{p:"Pregunta crítica: ¿Fue buena idea que Camila usara botas?",r:"Sí, porque llovía y las botas protegen los pies del agua. Es una opinión con argumento del texto."}],
+err:["Responder una pregunta inferencial copiando una frase literal. Hay que deducir.","Dar una opinión crítica sin razones: «porque sí» no es argumento.","Inventar cosas que el texto no permite deducir. La inferencia siempre se apoya en pistas."],
+retos:[{q:"«¿Dónde ocurre la historia?» suele ser una pregunta de nivel…",a:"Literal."},{q:"«¿Por qué crees que el personaje mintió?» es de nivel…",a:"Inferencial."},{q:"«¿Estás de acuerdo con la decisión del personaje?» es de nivel…",a:"Crítico."}],
+dato:"El escritor Edgar Allan Poe es considerado el creador del cuento policíaco, con «Los crímenes de la calle Morgue» (1841)."}
+};
+SUBJECTS.forEach(su=>su.topics&&su.topics.forEach(t=>{t.deep=DEEP[t.id]}));
+const app=document.getElementById('app');
+const store={get(k){try{return JSON.parse(localStorage.getItem(k))}catch(e){return null}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}};
+let state={sub:(store.get('rp_sub')||'bio'),view:'home'};
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const shuffle=a=>{a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
+const subj=()=>SUBJECTS.find(s=>s.id===state.sub)||SUBJECTS[0];
+function colorVars(s){return `--c:var(${s.c});--soft:var(${s.soft||'--bio-soft'})`}
+
+function home(){
+  const s=subj();
+  const tabs=SUBJECTS.map(x=>`<button class="tab" role="tab" aria-selected="${x.id===s.id}" style="--c:var(${x.c})" data-sub="${x.id}"><span class="dot"></span>${esc(x.name)}</button>`).join('');
+  let body;
+  if(s.pending){
+    body=`<div class="pending"><h3>Temas de ${esc(s.name)} pendientes</h3>Cuando papá envíe los temas vistos antes de vacaciones, aquí aparecerán la explicación y el cuestionario de esta materia.</div>`;
+  }else{
+    body=`<div class="topics">`+s.topics.map((t,i)=>{
+      const best=store.get('rp_best_'+s.id+'_'+t.id),seen=store.get('rp_seen_'+s.id+'_'+t.id);
+      return `<div class="topic"><span class="num">${i+1}</span><div class="tb"><h3>${esc(t.name)}</h3><p>${esc(t.desc)}</p>
+      <div class="tmeta">${seen?'<span class="chip ok">Explicación leída</span>':'<span class="chip">Sin estudiar</span>'}${best!=null?`<span class="chip">Mejor puntaje: ${best}/${t.total}</span>`:`<span class="chip">${t.total} preguntas</span>`}</div>
+      <div class="tbtns"><button class="btn ghost" data-exp="${t.id}">1 · Explicación</button><button class="btn" data-quiz="${t.id}">2 · Cuestionario</button></div></div></div>`}).join('')+`</div>`;
+  }
+  app.innerHTML=`<header class="top"><span class="eyebrow">7.° grado · 4.° periodo</span><h1>Repaso para las evaluaciones</h1><p>Primero estudia la explicación del tema y después presenta el cuestionario. Si te equivocas en una de selección múltiple, tienes una pista y un segundo intento.</p></header>
+  <nav class="tabs" role="tablist">${tabs}</nav>
+  <section style="${colorVars(s)}"><div class="subject-head"><h2>${esc(s.name)}</h2>${s.desc?`<p>${esc(s.desc)}</p>`:''}</div>${body}</section>`;
+  app.querySelectorAll('.tab').forEach(b=>b.onclick=()=>{state.sub=b.dataset.sub;store.set('rp_sub',state.sub);home()});
+  app.querySelectorAll('[data-exp]').forEach(b=>b.onclick=()=>explain(b.dataset.exp));
+  app.querySelectorAll('[data-quiz]').forEach(b=>b.onclick=()=>start(b.dataset.quiz));
+  scrollTo(0,0);
+}
+function explain(tid,step){
+  const s=subj(),t=s.topics.find(x=>x.id===tid),d=t.deep||{};
+  store.set('rp_seen_'+s.id+'_'+t.id,1);
+  const steps=[];
+  if(d.ideas)steps.push({k:'En 3 ideas',h:`<p class="small">Si solo te acuerdas de esto, ya vas bien.</p><ol class="ideas">${d.ideas.map(x=>`<li>${esc(x)}</li>`).join('')}</ol>`});
+  steps.push({k:'La explicación',h:t.exp});
+  if(d.ej)steps.push({k:'Ejemplos resueltos',h:`<p class="small">Lee el problema, intenta resolverlo en tu cabeza y después mira la solución.</p>`+d.ej.map((x,i)=>`<div class="ex"><div class="exn">Ejemplo ${i+1}</div><p>${esc(x.p)}</p><details><summary>Ver la solución</summary><p>${x.r.split(/ (?=\d\) )/).map(esc).join('<br>')}</p></details></div>`).join('')});
+  if(d.err)steps.push({k:'Errores comunes',h:`<p class="small">Estas son las trampas en las que más se cae en los exámenes.</p><ul class="errs">${d.err.map(x=>`<li>${esc(x)}</li>`).join('')}</ul>`});
+  if(d.retos)steps.push({k:'Mini-retos',h:`<p class="small">Responde en voz alta o en tu cuaderno. Luego toca para revisar.</p>`+d.retos.map((x,i)=>`<details class="reto"><summary><span class="rn">${i+1}</span>${esc(x.q)}</summary><p><b>Respuesta:</b> ${esc(x.a)}</p></details>`).join('')+(d.dato?`<div class="dato"><b>Dato curioso</b><p>${esc(d.dato)}</p></div>`:'')});
+  const i=Math.max(0,Math.min(step||0,steps.length-1)),last=i===steps.length-1;
+  app.innerHTML=`<div style="${colorVars(s)}"><div class="bar"><button class="back" id="exit">← Temas</button><div class="progress"><span style="width:${(i+1)/steps.length*100}%"></span></div><span class="count">${i+1}/${steps.length}</span></div>
+  <div class="stepnav">${steps.map((x,j)=>`<button class="sn${j===i?' on':''}${j<i?' done':''}" data-j="${j}">${esc(x.k)}</button>`).join('')}</div>
+  <article class="card exp"><div class="topic-name">${esc(s.name)} · ${esc(t.name)}</div><h2 class="et">${esc(steps[i].k)}</h2>${steps[i].h}</article>
+  <div class="actions">${i>0?'<button class="btn ghost" id="prev">← Anterior</button>':''}${last?'<button class="btn" id="go">Ya estudié: presentar cuestionario →</button>':'<button class="btn" id="next">Siguiente →</button>'}</div></div>`;
+  document.getElementById('exit').onclick=home;
+  app.querySelectorAll('.sn').forEach(b=>b.onclick=()=>explain(tid,+b.dataset.j));
+  const pv=document.getElementById('prev');if(pv)pv.onclick=()=>explain(tid,i-1);
+  const nx=document.getElementById('next');if(nx)nx.onclick=()=>explain(tid,i+1);
+  const go=document.getElementById('go');if(go)go.onclick=()=>start(t.id);
+  const on=app.querySelector('.sn.on');if(on&&on.scrollIntoView)on.scrollIntoView({block:'nearest',inline:'center'});
+  scrollTo(0,0);
+}
+let quiz;
+function start(tid){
+  const s=subj(),t=s.topics.find(x=>x.id===tid);
+  const items=shuffle(t.qs.map(q=>({...q,type:'mc'}))).concat(t.open);
+  quiz={s,t,items,i:0,tries:0,score:0,log:[]};
+  ask();
+}
+function head(){const {s,t}=quiz,n=quiz.items.length;
+  return `<div class="bar"><button class="back" id="exit">← Temas</button><div class="progress"><span style="width:${quiz.i/n*100}%"></span></div><span class="count">${quiz.i+1}/${n}</span></div>`}
+function ask(){
+  const {s,t}=quiz,q=quiz.items[quiz.i];
+  quiz.tries=0;
+  if(q.type==='open'){
+    app.innerHTML=`<div style="${colorVars(s)}">${head()}
+    <div class="card"><div class="topic-name">${esc(t.name)} · Pregunta abierta</div>
+    ${t.ref?`<details class="refbox"><summary>Ver el cuento</summary>${t.ref}</details>`:''}<h2 class="q">${esc(q.q)}</h2>
+    <label for="ans" class="small">Escribe tu respuesta con tus palabras:</label>
+    <textarea id="ans" rows="4" placeholder="Escribe aquí…"></textarea>
+    <div id="fb"></div><div class="actions" id="act"><button class="btn" id="show">Ver respuesta</button></div></div></div>`;
+    document.getElementById('exit').onclick=home;
+    document.getElementById('show').onclick=()=>{
+      const mine=document.getElementById('ans').value.trim();document.getElementById('ans').readOnly=true;
+      document.getElementById('fb').innerHTML=`<div class="fb model"><b>Respuesta esperada:</b> ${esc(q.a)}</div><p class="small" style="margin-top:12px">Compara tu respuesta con la esperada. ¿Cómo te fue?</p>`;
+      const act=document.getElementById('act');
+      act.innerHTML=`<button class="btn ghost" data-v="0">No la sabía</button><button class="btn ghost" data-v="0.5">Me faltó algo</button><button class="btn" data-v="1">La tenía bien</button>`;
+      act.querySelectorAll('[data-v]').forEach(b=>b.onclick=()=>{const v=+b.dataset.v;quiz.score+=v;
+        if(v<1)quiz.log.push({q:q.q,a:q.a,half:v>0,open:true,mine});
+        nextStep()});
+    };
+    return;
+  }
+  quiz.opts=q.o.length===2?q.o.map((x,i)=>({x,ok:i===0})).sort((a)=>a.x==="Verdadero"?-1:1):shuffle(q.o.map((x,i)=>({x,ok:i===0})));
+  app.innerHTML=`<div style="${colorVars(s)}">${head()}
+  <div class="card"><div class="topic-name">${esc(t.name)} · Selección múltiple</div>
+  ${t.ref?`<details class="refbox"><summary>Ver el cuento</summary>${t.ref}</details>`:''}<h2 class="q">${esc(q.q)}</h2>
+  <div class="opts">${quiz.opts.map((o,k)=>`<button class="opt" data-k="${k}"><span class="l">${'ABCD'[k]}</span><span>${esc(o.x)}</span></button>`).join('')}</div>
+  <div id="fb"></div><div class="actions" id="act"></div></div></div>`;
+  document.getElementById('exit').onclick=home;
+  app.querySelectorAll('.opt').forEach(b=>b.onclick=()=>pick(+b.dataset.k,b));
+}
+function pick(k,btn){
+  const q=quiz.items[quiz.i],o=quiz.opts[k],fb=document.getElementById('fb'),act=document.getElementById('act');
+  const all=[...app.querySelectorAll('.opt')];
+  if(o.ok){
+    const pts=quiz.tries===0?1:0.5;quiz.score+=pts;
+    if(pts<1)quiz.log.push({q:q.q,a:q.o[0],half:true});
+    all.forEach((b,i)=>{b.disabled=true;if(i!==k&&!b.classList.contains('wrong'))b.classList.add('dim')});
+    btn.classList.add('right');
+    fb.innerHTML=`<div class="fb ok"><b>${quiz.tries===0?'¡Correcto!':'Bien, lo corregiste.'}</b> ${esc(q.e)}</div>`;
+    next(act);
+  }else if(quiz.tries===0){
+    quiz.tries=1;btn.classList.add('wrong');btn.disabled=true;
+    fb.innerHTML=`<div class="fb hint"><b>Esa no es.</b> Pista: ${esc(q.h)} Intenta otra vez.</div>`;
+  }else{
+    quiz.log.push({q:q.q,a:q.o[0],half:false});
+    btn.classList.add('wrong');
+    all.forEach((b,i)=>{b.disabled=true;if(quiz.opts[i].ok)b.classList.add('right');else if(!b.classList.contains('wrong'))b.classList.add('dim')});
+    fb.innerHTML=`<div class="fb bad"><b>La respuesta era: ${esc(q.o[0])}.</b> ${esc(q.e)}</div>`;
+    next(act);
+  }
+}
+function next(act){
+  const last=quiz.i===quiz.items.length-1;
+  act.innerHTML=`<button class="btn" id="nx">${last?'Ver resultado':'Siguiente →'}</button>`;
+  const b=document.getElementById('nx');b.focus();b.onclick=nextStep;
+}
+function nextStep(){if(quiz.i===quiz.items.length-1)results();else{quiz.i++;ask();scrollTo(0,0)}}
+function results(){
+  const {s,t,score,log}=quiz,n=quiz.items.length,p=Math.round(score/n*100);
+  const key='rp_best_'+s.id+'_'+t.id,best=store.get(key);
+  const sc=Math.floor(score);if(best==null||sc>best)store.set(key,sc);
+  const msg=p>=90?'Muy bien preparada para la evaluación.':p>=70?'Vas bien. Repasa las preguntas de abajo.':p>=50?'Hay que reforzar varias cosas antes de la evaluación.':'Conviene volver a leer la explicación y repetir el cuestionario.';
+  const fails=log.filter(x=>!x.half),halves=log.filter(x=>x.half);
+  const fecha=new Date().toLocaleDateString('es-CO',{day:'numeric',month:'long'});
+  const resumen=`Repaso ${s.name} · ${t.name} (${fecha})\nPuntaje: ${score} de ${n} (${p} %)\nBien a la primera: ${n-log.length}\nA medias o con pista: ${halves.length}\nNo la sabía: ${fails.length}`+(log.length?`\nReforzar:\n`+log.map(x=>'- '+x.q).join('\n'):'\nSin temas para reforzar.');
+  app.innerHTML=`<div style="${colorVars(s)}"><div class="bar"><button class="back" id="exit">← Temas</button></div>
+  <div class="card"><div class="topic-name">${esc(s.name)} · ${esc(t.name)}</div>
+  <div class="score"><div class="ring" style="--p:${p}"><div>${p}%</div></div><div><h2>${score} de ${n} puntos</h2><p>${msg}</p><p class="small">Bien a la primera = 1 punto · con pista o a medias = ½ punto.</p></div></div>
+  ${log.length?`<h3 style="font-size:18px;margin-top:8px">Para repasar</h3><ul class="review">${log.map(x=>`<li class="${x.half?'half':''}"><div class="rq">${esc(x.q)}</div>${x.open&&x.mine?`<div class="ra">Tu respuesta: ${esc(x.mine)}</div>`:''}<div class="ra">${x.half&&!x.open?'La corregiste con pista. ':''}Respuesta: ${esc(x.a)}</div></li>`).join('')}</ul>`:''}
+  <div class="dad"><h3>Resumen para papá</h3><pre id="res">${esc(resumen)}</pre></div>
+  <div class="actions"><button class="btn ghost" id="cp">Copiar resumen</button><button class="btn ghost" id="exp2">Repasar explicación</button><button class="btn ghost" id="again">Repetir cuestionario</button><button class="btn" id="home">Elegir otro tema</button></div>
+  <p class="note" id="cpmsg" hidden></p></div></div>`;
+  document.getElementById('exit').onclick=home;document.getElementById('home').onclick=home;
+  document.getElementById('again').onclick=()=>start(t.id);document.getElementById('exp2').onclick=()=>explain(t.id);
+  document.getElementById('cp').onclick=()=>{const m=document.getElementById('cpmsg');
+    const sel=()=>{const r=document.createRange();r.selectNodeContents(document.getElementById('res'));const g=getSelection();g.removeAllRanges();g.addRange(r);m.hidden=false;m.textContent='Texto seleccionado: cópialo con Ctrl+C o mantén presionado en el celular.'};
+    try{navigator.clipboard.writeText(resumen).then(()=>{m.hidden=false;m.textContent='Resumen copiado. Pégalo en WhatsApp para enviárselo a papá.'},sel)}catch(e){sel()}};
+  scrollTo(0,0);
+}
+home();
+</script>
+
+</body>
+</html>
